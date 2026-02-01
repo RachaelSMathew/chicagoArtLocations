@@ -1,0 +1,99 @@
+.scrollingSearchResults {
+  gap: 20px;
+  display: flex;
+  position: absolute;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.numResultsFound {
+  letter-spacing: 4px;
+  text-align: left;
+  position: fixed;
+  top: 340px;
+  width: 85%;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.stickyHeader {
+  border-radius: 1.625rem;
+  flex-direction: row;
+  align-items: center;
+  z-index: 1;
+  font-size: 20px;
+  padding-left: 15px;
+  padding-right: 15px;
+  font-weight: 600;
+  background-color: #f2cb6f;
+  top: 7px;
+  display: flex;
+  width: 98%;
+  justify-content: space-between;
+  position: sticky
+}
+
+.noResults {
+  position: absolute;
+  letter-spacing: 4px;
+  font-size: 45px;
+  width: 100%;
+  text-align: center;
+}
+
+/* source for search bar: https://codepen.io/kmuenster/pen/XWWeQGw*/
+.searchBar {
+  display: flex;
+  justify-content: center;
+}
+
+#searchQueryInput {
+  height: 2.8rem;
+  background: #f5f5f5;
+  outline: none;
+  border: none;
+  padding: 0 3.5rem 0 1.5rem;
+  font-size: 1rem;
+}
+
+#searchQuerySubmit {
+  width: 3.5rem;
+  height: 2.8rem;
+  margin-left: -3.5rem;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+#searchQuerySubmit:hover {
+  cursor: pointer;
+}
+
+.slant:hover {
+  transform: scale(1.05) rotate(0deg) translate(0px, 0px) skew(-10deg, 0deg);
+}
+
+body {
+  overflow: hidden;
+}
+
+/**** SPINNER (https://codepen.io/Colt/pen/BarvbKR?editors=0100) **/
+.spinner {
+  height: 60px;
+  width: 60px;
+  border: 6px solid;
+  border-color: #a54340 transparent #a54340 transparent;
+  border-radius: 50%;
+  animation: spin 1.3s ease infinite;
+  flex: 0 0 auto;
+  /** same as flex: none, div does not shrink or grow (the 0 is for flex-grow and flex-shrink)**/
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

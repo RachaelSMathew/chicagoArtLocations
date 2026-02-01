@@ -1,0 +1,26 @@
+[placeholder]:empty::before { /*source: https://stackoverflow.com/a/24827239*/
+    content: attr(placeholder);
+    color: #555; 
+}
+
+[placeholder]:empty:focus::before {
+    content: "";
+}
+.searchBarResult {
+    padding-bottom: .5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:10px;
+    padding-left: 1.5rem;
+    margin: 0;
+    padding-top: .5rem;
+    cursor: pointer
+}
+.textSearchBarResult {
+    margin: 0;
+    margin-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
