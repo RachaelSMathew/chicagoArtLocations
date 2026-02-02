@@ -36,7 +36,36 @@
 2. remove all markers that are not in the results collection of mural_registration_ids
 3. Go through each result and create a new marker of that result if it doesn't exist in the DOM already 
     
+**Map Animations**
 
+- when results are updated:
+  
+  bounds of the map are updated to fit all the search results
+  method findBounds finds the two extremes of the longitude and latitude and sets the bounds state variable
+  
+  ```
+  async function updateMap() {
+    if (results.length === 1) {
+      mapRef.current.flyTo({
+        center: [results[0][1].longitude, results[0][1].latitude],
+        zoom: 20,
+      });
+    }
+    if (results.length > 1) {
+      // update bounds and immediately apply them
+      const newBounds = findBounds(results);
+      if (newBounds && mapRef.current) {
+        mapRef.current.fitBounds(newBounds);
+      }
+    }
+  }
+  ```
+- when a marker is clicked
+  
+  the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
+  
+  when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
+  
 ## On formatting and making files more readable and organized (prettier and eslit)
 
 1. eslint vs prettier 
@@ -46,7 +75,7 @@ ESLint handle formatting, and code quality(unused vars)
 
 
 eslint rules that can be auto-fixed: https://eslint.org/docs/latest/rules/ (the auto-fix ones have a wrench next to them)
-Prettier can auto fix 
+Prettier can auto-fix 
 
 <img width="282" height="206" alt="Screenshot 2026-01-25 at 10 03 17 PM" src="https://github.com/user-attachments/assets/812e0ac9-7d8b-4b47-89eb-3ccfa9b5b6f9" />
 
