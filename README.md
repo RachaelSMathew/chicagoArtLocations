@@ -2,7 +2,7 @@
 
 ** Note: Only runs locally!
 
-Summary: Taking location data from [here](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) and finding the nearest art locations to the user's current coordinate. First ten search results should appear, and then when the user scrolls to the bottom a loading icon should appear, and then more results should appear.
+Summary: Taking location data from [here](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) ([Official website](https://data.cityofchicago.org/resource/we8h-apcf.json))and finding the nearest art locations to the user's current coordinate. First ten search results should appear, and then when the user scrolls to the bottom a loading icon should appear, and then more results should appear.
  
 ## How to run:
 - clone repo
