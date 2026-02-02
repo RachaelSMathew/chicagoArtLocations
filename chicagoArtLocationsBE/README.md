@@ -1,5 +1,5 @@
 ## Pipeline
-1. Render taking the chicago coordiates json and converting to a KD Tree and stores it 
+1. Render taking the [chicago coordiates json](https://data.cityofchicago.org/resource/we8h-apcf.json) and converting to a KD Tree and stores it 
 2. Opensearch is locally used to do advanced search of the description, artists name, location etc.
 
 ### If opensearch has vector search, why not use that instead of a KD Tree?
