@@ -2,6 +2,13 @@
 1. Render taking the chicago coordiates json and converting to a KD Tree and stores it 
 2. Opensearch is locally used to do advanced search of the description, artists name, location etc.
 
+### If opensearch has vector search, why not use that instead of a KD Tree?
+- wanted to challenge myself with a new data structure
+- opensearch's vector search uses L2 Euclidean distance and not haversine distance
+- opensearch uses KNN search --> KD tree search is faster for lower-dimensional data
+
+<img width="413" height="187" alt="Screenshot 2026-02-01 at 9 38 27 PM" src="https://github.com/user-attachments/assets/9423ab95-1ffe-431d-83d5-4cb97695c4a9" />
+
 ## Render
 - using FREE tier --> web service instance spins down after 15 min. of inactivity
 - When you push to GitHub and render starts deploying, it runs through your GitHub workflow
