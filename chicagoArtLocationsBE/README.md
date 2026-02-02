@@ -4,7 +4,7 @@
 
 ### If opensearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
-- opensearch's vector search uses L2 Euclidean distance and not haversine distance
+- opensearch's vector search uses [L2 Euclidean distance](https://docs.opensearch.org/latest/vector-search/getting-started/index/#step-1-create-a-vector-index) and not haversine distance
 - opensearch uses KNN search --> KD tree search is faster for lower-dimensional data
 
 <img width="413" height="187" alt="Screenshot 2026-02-01 at 9 38 27 PM" src="https://github.com/user-attachments/assets/9423ab95-1ffe-431d-83d5-4cb97695c4a9" />
