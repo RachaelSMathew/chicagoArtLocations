@@ -1,6 +1,7 @@
 ## Pipeline
-1. Render taking the [chicago coordiates json](https://data.cityofchicago.org/resource/we8h-apcf.json) and converting to a KD Tree and stores it 
-2. Opensearch is locally used to do advanced search of the description, artists name, location etc.
+1. Render taking the [chicago coordiates json](https://data.cityofchicago.org/resource/we8h-apcf.json) and converting to a KD Tree and stores it
+2. KD Tree: finds the n closest locations to the current location with a minimum distance of minDistance 
+3. Opensearch is __locally used__ to do advanced search of the description, artists name, location etc.
 
 ### If opensearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
