@@ -2,11 +2,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import sys
-from KDTreeToOpenSearch import newsearch, createKDTreeAddResultsToOpenSearch
+from CoreKDFunctions import (
+    createKDTree,
+    newsearch,
+    whichAxisSplitShouldBe,
+    kdTree,
+    isTreeBalanced,
+    getCoordinates,
+)
 import time
 import os
-from opensearch import createIndex, searchIndex
 import copy
+
+if (
+    os.getenv("NODE_ENV") != "production"
+):  ## https://allanderek.github.io/posts/import-placement/
+    from opensearch import createIndex, searchIndex, addResultToIndex
 
 sys.path.append(".")  ## appends . to end of PYTHONPATH
 app = FastAPI()
@@ -20,12 +31,17 @@ app.add_middleware(
 )
 
 
-@app.on_event("startup")
+@app.on_event("startup")  # Runs once at startup, after server/uvicorn.run starts
 async def startup_event():
     """Initialize KD-tree when FastAPI starts"""
+    muralCoords = getCoordinates(
+        "https://data.cityofchicago.org/resource/we8h-apcf.json"
+    )
+    createKDTree(muralCoords, whichAxisSplitShouldBe(muralCoords))
     if os.getenv("NODE_ENV") != "production":
-        createIndex()  # only create opensearch index in production
-    createKDTreeAddResultsToOpenSearch()  # Runs once at startup, after server/uvicorn.run starts
+        createIndex()  # only create opensearch index in development
+        addResultToIndex(muralCoords)  # add to opensearch index
+        print(isTreeBalanced(kdTree))
 
 
 # This runs EVERY time someone visits /api/search
