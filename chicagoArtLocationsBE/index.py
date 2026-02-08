@@ -52,7 +52,6 @@ async def search(
     start_time = time.time()
     results = newsearch(lat, long, minDistance)
     resultsFurtherFiltered = []
-
     if os.getenv("NODE_ENV") == "production":
         for result in results:
             resultConcatenated = (
@@ -60,8 +59,11 @@ async def search(
                 + " "
                 + result[1]["artist_credit"]
                 + " "
-                + result[1]["description_of_artwork"]
-                + " "
+                + (
+                    result[1]["description_of_artwork"] + " "
+                    if "description_of_artwork" in result[1]
+                    else ""
+                )
                 + result[1]["street_address"]
             )
             if searchQuery.lower() in (resultConcatenated).lower():
