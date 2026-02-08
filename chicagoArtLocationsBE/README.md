@@ -57,6 +57,72 @@ If you want to ensure the case insensitiveness at query time do this
   }
 }
 
+## Why I'm using OpenSearch locally only
+
+Had to delete my open search collection bc wtf was that bill:
+<img width="1149" height="450" alt="Screenshot 2026-01-20 at 11 59 07 PM" src="https://github.com/user-attachments/assets/c1b94a43-30c3-433c-8446-43e3a6c6608f" />
+<img width="280" height="524" alt="Screenshot 2026-01-21 at 12 11 56 AM" src="https://github.com/user-attachments/assets/01bbef31-58ef-4c96-affe-67678b28543e" />
+<img width="286" height="361" alt="Screenshot 2026-01-21 at 5 39 52 PM" src="https://github.com/user-attachments/assets/1dcc3296-18ea-44b1-b81b-e02372a9f87d" />
+
+Open search domain service relies on instance types, storage and ocu :(
+<img width="279" height="362" alt="Screenshot 2026-01-22 at 10 36 17 PM" src="https://github.com/user-attachments/assets/4275de95-723e-4455-b8f5-779a94088763" />
+<img width="932" height="673" alt="Screenshot 2026-01-20 at 11 53 25 PM" src="https://github.com/user-attachments/assets/580e8612-80a9-4971-8268-c6b9e4183f8c" />
+
+nevermind, the bill is from open search domains not serverless collections! 
+Never mind again!!
+<img width="1440" height="665" alt="Screenshot 2026-01-20 at 11 52 42 PM" src="https://github.com/user-attachments/assets/31d48fe6-0dcb-4338-a1f0-493e1052566e" />
+<img width="1440" height="679" alt="Screenshot 2026-01-20 at 11 52 35 PM" src="https://github.com/user-attachments/assets/0dce3321-d4b0-4634-8c4d-41d82d0e61b7" />
+<img width="1440" height="755" alt="Screenshot 2026-01-20 at 11 52 29 PM" src="https://github.com/user-attachments/assets/615fccd6-31f5-4850-aa6d-6c102935c8e2" />
+
+
+Chicago-art data access policy for open search collection:
+```
+[
+  {
+    "Rules": [
+      {
+        "Resource": [
+          "collection/chicago-art-installations"
+        ],
+        "Permission": [
+          "aoss:CreateCollectionItems",
+          "aoss:DeleteCollectionItems",
+          "aoss:UpdateCollectionItems",
+          "aoss:DescribeCollectionItems"
+        ],
+        "ResourceType": "collection"
+      }
+    ],
+    "Principal": [
+      "arn:aws:iam::115044045238:user/RachaelMathewOpenSearchAllAccess"
+    ],
+    "Description": "ChicagoArtAllowFullAccess_collection"
+  },
+  {
+    "Rules": [
+      {
+        "Resource": [
+          "index/chicago-art-installations/*"
+        ],
+        "Permission": [
+          "aoss:CreateIndex",
+          "aoss:DeleteIndex",
+          "aoss:UpdateIndex",
+          "aoss:DescribeIndex",
+          "aoss:ReadDocument",
+          "aoss:WriteDocument"
+        ],
+        "ResourceType": "index"
+      }
+    ],
+    "Principal": [
+      "arn:aws:iam::115044045238:user/RachaelMathewOpenSearchAllAccess"
+    ],
+    "Description": "ChicagoArtAllowFullAccess_index"
+  }
+]
+```
+
 # getClosestLocations
 <img width="395" height="401" alt="Screenshot 2025-12-30 at 12 34 22 AM" src="https://github.com/user-attachments/assets/b01c57da-fc71-4d5f-8f27-5d2bb459b84d" />
 
