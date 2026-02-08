@@ -58,9 +58,9 @@ async def search(
             resultConcatenated = (
                 result[1]["artwork_title"]
                 + " "
-                + result[1]["artist_name"]
+                + result[1]["artist_credit"]
                 + " "
-                + result[1]["artwork_description"]
+                + result[1]["description_of_artwork"]
                 + " "
                 + result[1]["street_address"]
             )
