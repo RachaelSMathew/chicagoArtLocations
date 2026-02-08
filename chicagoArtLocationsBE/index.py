@@ -6,7 +6,6 @@ from CoreKDFunctions import (
     createKDTree,
     newsearch,
     whichAxisSplitShouldBe,
-    kdTree,
     isTreeBalanced,
     getCoordinates,
 )
@@ -30,6 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+kdTree = None
+
 
 @app.on_event("startup")  # Runs once at startup, after server/uvicorn.run starts
 async def startup_event():
@@ -37,7 +38,8 @@ async def startup_event():
     muralCoords = getCoordinates(
         "https://data.cityofchicago.org/resource/we8h-apcf.json"
     )
-    createKDTree(muralCoords, whichAxisSplitShouldBe(muralCoords))
+    global kdTree
+    kdTree = createKDTree(muralCoords, whichAxisSplitShouldBe(muralCoords))
     if os.getenv("NODE_ENV") != "production":
         createIndex()  # only create opensearch index in development
         addResultToIndex(muralCoords)  # add to opensearch index
@@ -49,8 +51,11 @@ async def startup_event():
 async def search(
     lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
 ):
+    global kdTree
     start_time = time.time()
-    results = newsearch(lat, long, minDistance)
+    results = newsearch(
+        lat, long, minDistance
+    )  ## returns 20 nearest points with a minimum distance of minDistance
     resultsFurtherFiltered = []
     if os.getenv("NODE_ENV") == "production":
         for result in results:
@@ -70,10 +75,23 @@ async def search(
                 resultsFurtherFiltered.append(copy.deepcopy(result))
     else:
         opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
-        for i in opensearchReturn:
-            for result in results:
-                if result[1]["mural_registration_id"] == i.get("_id"):
-                    resultsFurtherFiltered.append(copy.deepcopy(result))
+        stillSearching = True
+        numClosestNeighbors = 40
+        while stillSearching:
+            for i in opensearchReturn:
+                for result in results:
+                    if result[1]["mural_registration_id"] == i.get("_id"):
+                        resultsFurtherFiltered.append(copy.deepcopy(result))
+            if (
+                len(resultsFurtherFiltered) == 0
+                and len(results) > 0
+                and len(opensearchReturn) > 0
+                and numClosestNeighbors <= kdTree.length
+            ):
+                results = newsearch(lat, long, results[-1][0], numClosestNeighbors)
+                numClosestNeighbors += 20
+            else:
+                stillSearching = False
     return {
         "results": results if searchQuery == "" else resultsFurtherFiltered,
         "count": len(results if searchQuery == "" else resultsFurtherFiltered),

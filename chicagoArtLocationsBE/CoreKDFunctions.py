@@ -8,11 +8,12 @@ kdTree = None
 
 
 class Tree:
-    def __init__(self, val, left, right, axis):
+    def __init__(self, val, left, right, axis, length):
         self.left = left
         self.right = right
         self.val = val
         self.axis = axis
+        self.length = length
 
 
 def whichAxisSplitShouldBe(coords):
@@ -40,7 +41,7 @@ def whichAxisSplitShouldBe(coords):
 def createKDTree(coords, axis):
     global kdTree
     if len(coords) == 1:
-        return Tree(coords[0], None, None, axis)
+        return Tree(coords[0], None, None, axis, 1)
     if len(coords) == 0:
         return None
 
@@ -48,7 +49,7 @@ def createKDTree(coords, axis):
     mid = int(len(coords) / 2)
     rootNode = coords[mid]
     ## send to dynamo DB
-    root = Tree(rootNode, None, None, axis)
+    root = Tree(rootNode, None, None, axis, len(coords))
     root.left = createKDTree(
         coords[:mid], whichAxisSplitShouldBe(coords[:mid])
     )  ## left node
