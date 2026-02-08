@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import sys
-from collectPointsKDTree import newsearch, defaultFunc
+from KDTreeToOpenSearch import newsearch, createKDTreeAddResultsToOpenSearch
 import time
 import os
 from opensearch import createIndex, searchIndex
@@ -23,9 +23,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     """Initialize KD-tree when FastAPI starts"""
-    if os.getenv("NODE_ENV") == "production":
+    if os.getenv("NODE_ENV") != "production":
         createIndex()  # only create opensearch index in production
-    defaultFunc()  # Runs once at startup, after server/uvicorn.run starts
+    createKDTreeAddResultsToOpenSearch()  # Runs once at startup, after server/uvicorn.run starts
 
 
 # This runs EVERY time someone visits /api/search

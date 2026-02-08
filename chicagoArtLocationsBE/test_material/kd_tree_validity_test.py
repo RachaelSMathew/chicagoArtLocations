@@ -4,10 +4,12 @@ import json
 import sys
 import os
 
+## this allows importing of files in this directory
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ## os.path.dirname(__file__) == '/Users/rachaelmathew/stationInformation/test_material'
 sys.path.append(parent_dir)
-import collectPointsKDTree
+
+from CoreKDFunctions import createKDTree, newsearch, whichAxisSplitShouldBe
 
 """
 We're not checking for the order of the K closest points, just verifying that the K closest points are correct
@@ -21,9 +23,9 @@ We're not checking for the order of the K closest points, just verifying that th
 
 def testKDTree():
     files = [
-        "test_material/chicago_coordinates_latitude_variance.json",
-        "test_material/chicago_coordinates_longitude_variance.json",
-        "test_material/chicago_coordinates_within_two_miles.test.json",
+        "chicagoArtLocationsBE/test_material/chicago_coordinates_latitude_variance.json",
+        "chicagoArtLocationsBE/test_material/chicago_coordinates_longitude_variance.json",
+        "chicagoArtLocationsBE/test_material/chicago_coordinates_within_two_miles.test.json",
     ]
 
     for file in files:
@@ -31,9 +33,7 @@ def testKDTree():
         with open(file, "r") as f:
             points = json.load(f)
 
-        kdTree = collectPointsKDTree.createKDTree(
-            points, collectPointsKDTree.whichAxisSplitShouldBe(points)
-        )
+        kdTree = createKDTree(points, whichAxisSplitShouldBe(points))
         dist_of_chicago_to_points = []
         dist_of_south_carolina_to_points = []
 
@@ -67,9 +67,7 @@ def testKDTree():
         coord_in_chicago = {"latitude": 47.8832, "longitude": -87.6424}
         coord_in_south_carolina = {"latitude": 34.0522, "longitude": -81.0559}
         for coord in [coord_in_chicago, coord_in_south_carolina]:
-            closestPoints = collectPointsKDTree.newsearch(
-                coord["latitude"], coord["longitude"], 0, 50
-            )
+            closestPoints = newsearch(coord["latitude"], coord["longitude"], 0, 50)
             closestPoints_ids = [
                 point[1]["mural_registration_id"] for point in closestPoints
             ].sort()

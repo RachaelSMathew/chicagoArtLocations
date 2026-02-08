@@ -34,28 +34,27 @@ class MinHeapTree:
                 newIndex = (
                     math.floor(index / 2)
                     if isIndexDivBy2 == False
-                    else math.floor((index / 2) - 1)
+                    else math.floor((index / 2)) - 1
                 )
             else:
                 break
 
         self.tree = self.tree[0 : self.maxHeapSize]
 
-    def remove(self):
-        if self.tree == None:
+    def remove(self, treeCopy):
+        if treeCopy == None:
             return None
-        firstVal = self.tree[0]
-        treeCopy = copy.deepcopy(self.tree)
-        treeCopy[0] = self.tree[len(self.tree) - 1]
+        firstVal = treeCopy[0]
+        treeCopy[0] = treeCopy[len(treeCopy) - 1]
         treeCopy.pop()
         index = 0
         rightIndex = 2 * index + 2
         leftIndex = 2 * index + 1
         while leftIndex <= len(treeCopy) - 1:
             if (
-                treeCopy[rightIndex]["distance"] <= treeCopy[leftIndex]["distance"]
-                and treeCopy[leftIndex]["distance"] >= treeCopy[index]["distance"]
-            ):
+                rightIndex > len(treeCopy) - 1
+                or treeCopy[rightIndex]["distance"] <= treeCopy[leftIndex]["distance"]
+            ) and treeCopy[leftIndex]["distance"] >= treeCopy[index]["distance"]:
                 leftVal = treeCopy[leftIndex]
                 treeCopy[leftIndex] = treeCopy[index]
                 treeCopy[index] = leftVal
@@ -77,7 +76,8 @@ class MinHeapTree:
 
     def convertToArr(self):
         arr = []
-        for _ in range(len(self.tree)):
-            firstVal = self.remove()
+        treeCopy = copy.deepcopy(self.tree)
+        for _ in range(len(treeCopy)):
+            firstVal = self.remove(treeCopy)
             arr.append((firstVal["distance"], firstVal["value"]))
         return arr
