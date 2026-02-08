@@ -46,18 +46,12 @@ async def startup_event():
         print(isTreeBalanced(kdTree))
 
 
-# This runs EVERY time someone visits /api/search
-@app.get("/newsearch/")
-async def search(
-    lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
-):
+def searchingWithQueryProd(results, searchQuery, lat, long):
     global kdTree
-    start_time = time.time()
-    results = newsearch(
-        lat, long, minDistance
-    )  ## returns 20 nearest points with a minimum distance of minDistance
     resultsFurtherFiltered = []
-    if os.getenv("NODE_ENV") == "production":
+    stillSearching = True
+    numClosestNeighbors = 20
+    while stillSearching:
         for result in results:
             resultConcatenated = (
                 result[1]["artwork_title"]
@@ -73,25 +67,56 @@ async def search(
             )
             if searchQuery.lower() in (resultConcatenated).lower():
                 resultsFurtherFiltered.append(copy.deepcopy(result))
+
+        if (
+            numClosestNeighbors < kdTree.length
+            and len(resultsFurtherFiltered) == 0
+            and len(results) > 0
+        ):
+            results = newsearch(lat, long, results[-1][0], numClosestNeighbors)
+            numClosestNeighbors += 20
+        else:
+            stillSearching = False
+    return resultsFurtherFiltered
+
+
+def searchingWithQueryDev(results, searchQuery, lat, long):
+    global kdTree
+    resultsFurtherFiltered = []
+    opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
+    stillSearching = True
+    numClosestNeighbors = 40
+    while stillSearching:
+        for i in opensearchReturn:
+            for result in results:
+                if result[1]["mural_registration_id"] == i.get("_id"):
+                    resultsFurtherFiltered.append(copy.deepcopy(result))
+        if (
+            len(resultsFurtherFiltered) == 0
+            and numClosestNeighbors < kdTree.length
+            and len(results) > 0
+        ):
+            results = newsearch(lat, long, results[-1][0], numClosestNeighbors)
+            numClosestNeighbors += 20
+        else:
+            stillSearching = False
+    return resultsFurtherFiltered
+
+
+# This runs EVERY time someone visits /api/search
+@app.get("/newsearch/")
+async def search(
+    lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
+):
+    start_time = time.time()
+    results = newsearch(
+        lat, long, minDistance
+    )  ## returns 20 nearest points with a minimum distance of minDistance
+    resultsFurtherFiltered = []
+    if os.getenv("NODE_ENV") == "production":
+        resultsFurtherFiltered = searchingWithQueryProd(results, searchQuery, lat, long)
     else:
-        opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
-        stillSearching = True
-        numClosestNeighbors = 40
-        while stillSearching:
-            for i in opensearchReturn:
-                for result in results:
-                    if result[1]["mural_registration_id"] == i.get("_id"):
-                        resultsFurtherFiltered.append(copy.deepcopy(result))
-            if (
-                len(resultsFurtherFiltered) == 0
-                and len(results) > 0
-                and len(opensearchReturn) > 0
-                and numClosestNeighbors <= kdTree.length
-            ):
-                results = newsearch(lat, long, results[-1][0], numClosestNeighbors)
-                numClosestNeighbors += 20
-            else:
-                stillSearching = False
+        resultsFurtherFiltered = searchingWithQueryDev(results, searchQuery, lat, long)
     return {
         "results": results if searchQuery == "" else resultsFurtherFiltered,
         "count": len(results if searchQuery == "" else resultsFurtherFiltered),

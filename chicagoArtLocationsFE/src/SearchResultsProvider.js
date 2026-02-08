@@ -17,6 +17,7 @@ function SearchResultsProvider({ children }) {
   const [spinnerDisplay, setSpinnerDisplay] = useState("block");
   const [bounds, setBounds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const controller = new AbortController();
   const [finalSearchInput, setFinalSearchInput] =
     useState(
       "",
@@ -136,6 +137,7 @@ function SearchResultsProvider({ children }) {
         axios
           .get(
             `${get_URL}/newsearch/?lat=${currentLocation.latitude}&long=${currentLocation.longitude}&searchQuery=${finalSearchInput}&minDistance=${farthestDistance}`,
+            { signal: controller.signal },
           )
           .then((res) => {
             if (res.data.results.length === 0) {
@@ -153,6 +155,11 @@ function SearchResultsProvider({ children }) {
           });
       }
     }
+    return () => {
+      // aborts the request if the component unmounts during cleanup
+      controller.abort();
+      setIsLoading(false);
+    };
   }, [lastResultVisible]);
 
   // scroll to top of search results when search input changes
