@@ -111,7 +111,6 @@ def kNearestKDTree(main_root, target, k, minDistance=0):
 
         if dist >= minDistance:
             # Add to results (class manages length to k max)
-            print("adding to results", root.val, dist)
             results.append(root.val, dist)  ## O(log(n))
 
         axis = root.axis
