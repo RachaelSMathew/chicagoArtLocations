@@ -50,7 +50,6 @@ async def search(
     lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
 ):
     start_time = time.time()
-    opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
     results = newsearch(lat, long, minDistance)
     resultsFurtherFiltered = []
 
@@ -68,6 +67,7 @@ async def search(
             if searchQuery.lower() in (resultConcatenated).lower():
                 resultsFurtherFiltered.append(copy.deepcopy(result))
     else:
+        opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
         for i in opensearchReturn:
             for result in results:
                 if result[1]["mural_registration_id"] == i.get("_id"):
