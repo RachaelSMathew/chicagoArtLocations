@@ -45,25 +45,12 @@ function SearchResultsProvider({ children }) {
     };
   }, []);
 
-  const isPointInChicago = (point) => {
-    if (
-      point.latitude < 41.64 ||
-      point.latitude > 42.02 ||
-      point.longitude < -87.94 ||
-      point.longitude > -87.52
-    ) {
-      return false;
-    }
-    return true;
-  };
-
   const forLoopCompareBounds = (arr, bounds) => {
     let minLng = bounds[0][0];
     let minLat = bounds[0][1];
     let maxLng = bounds[1][0];
     let maxLat = bounds[1][1];
     for (let i = 0; i < arr.length; i++) {
-      if (!isPointInChicago(arr[i][1])) continue;
       minLng = Math.min(minLng, arr[i][1].longitude); // minLng
       minLat = Math.min(minLat, arr[i][1].latitude); // minLat
       maxLng = Math.max(maxLng, arr[i][1].longitude); // maxLng

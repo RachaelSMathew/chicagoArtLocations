@@ -171,11 +171,37 @@ def findHeight(root):
     return 1 + max(findHeight(root.left), findHeight(root.right))
 
 
+def isPointInChicago(point):
+    if (
+        (point["latitude"]) < 41.64
+        or (point["latitude"]) > 42.02
+        or (point["longitude"]) < -87.94
+        or (point["longitude"]) > -87.52
+    ):
+        return False
+    return True
+
+
 def getCoordinates(url):
     response = urllib.request.urlopen(url)
     data = json.load(response)
+    updatedData = []
     ## convert all latitude and longitude in each object to float
     for object in data:
-        object["latitude"] = float(object["latitude"])
-        object["longitude"] = float(object["longitude"])
-    return data
+        floatLat = float(object["latitude"])
+        floatLong = float(object["longitude"])
+        object["latitude"] = floatLat
+        object["longitude"] = floatLong
+
+        if not isPointInChicago(object):
+            ## some points are in the wrong order regarding latitude and longitude
+            object["latitude"] = floatLong
+            object["longitude"] = floatLat
+            object["location"] = {
+                "type": "Point",
+                "coordinates": [floatLong, floatLat],
+            }
+            if not isPointInChicago(object):
+                continue
+        updatedData.append(object)
+    return updatedData
