@@ -3,7 +3,7 @@
 2. KD Tree: finds the n closest locations to the current location with a minimum distance of minDistance 
 3. In Development env: Opensearch is __only used locally__ to do advanced search of the description, artists name, location etc.
 4. In Prod env: Basic search is used which involves searching for the query within the concatenated version of mural fields.
-5. If you click on a map marker or a search result --> find a search result that has the exact query in it's title
+5. If you click on a map marker or a search result --> find a search result that has the exact query in it's title (done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
 
 ### If opensearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
