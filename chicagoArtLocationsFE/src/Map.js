@@ -98,7 +98,10 @@ function Map() {
         );
         element.addEventListener("mouseleave", () => popup.remove());
         element.addEventListener("click", () => {
-          setFinalSearchInput(result_artwork.artwork_title ?? "untitled");
+          // do exact searching when you click on a marker
+          setFinalSearchInput(
+            '"' + result_artwork.artwork_title + '"' ?? "untitled",
+          );
         });
         // add popup to marker
         marker.setPopup(popup);

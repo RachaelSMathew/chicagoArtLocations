@@ -1,3 +1,14 @@
+.loading-text {
+  font-family: "Times New Roman";
+  letter-spacing: 2px;
+  font-style: italic;
+  position: fixed;
+  z-index: 1000;
+  font-size: 60px;
+  top: 40%;
+  left: 40%;
+}
+
 .scrollingSearchResults {
   gap: 20px;
   display: flex;
@@ -33,7 +44,7 @@
   display: flex;
   width: 98%;
   justify-content: space-between;
-  position: sticky
+  position: sticky;
 }
 
 .noResults {

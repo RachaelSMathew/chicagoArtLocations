@@ -12,6 +12,7 @@ from CoreKDFunctions import (
 import time
 import os
 import copy
+from haversine import haversine, Unit
 
 if (
     os.getenv("NODE_ENV") != "production"
@@ -80,6 +81,34 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
     return resultsFurtherFiltered
 
 
+## return all results from opensearch at once
+def exactSearchingWithQueryDev(searchQuery, lat, long):
+    opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
+    resultsFormatted = []
+    for i in opensearchReturn:
+        newFormatted = []
+        newFormatted.append(
+            haversine(
+                (i["_source"]["latitude"], i["_source"]["longitude"]),
+                (lat, long),
+                unit=Unit.MILES,
+            )
+        )
+        i["mural_registration_id"] = i["_id"]
+        i["location"] = {
+            "type": "Point",
+            "coordinates": [i["_source"]["longitude"], i["_source"]["latitude"]],
+        }
+        i.update(i["_source"])
+        del i["_source"]
+        del i["_index"]
+        del i["_id"]
+        del i["_score"]
+        newFormatted.append(i)
+        resultsFormatted.append(newFormatted)
+    return resultsFormatted
+
+
 def searchingWithQueryDev(results, searchQuery, lat, long):
     global kdTree
     resultsFurtherFiltered = []
@@ -112,11 +141,29 @@ async def search(
     results = newsearch(
         lat, long, minDistance
     )  ## returns 20 nearest points with a minimum distance of minDistance
+
     resultsFurtherFiltered = []
     if os.getenv("NODE_ENV") == "production":
         resultsFurtherFiltered = searchingWithQueryProd(results, searchQuery, lat, long)
     else:
-        resultsFurtherFiltered = searchingWithQueryDev(results, searchQuery, lat, long)
+        isExactSearch = (
+            searchQuery
+            and len(searchQuery) > 1
+            and searchQuery[-1] == '"'
+            and searchQuery[0] == '"'
+        )
+        if isExactSearch:
+            if minDistance > 0:
+                return {
+                    "results": [],
+                    "count": 0,
+                    "time_seconds": time.time() - start_time,
+                }
+            resultsFurtherFiltered = exactSearchingWithQueryDev(searchQuery, lat, long)
+        else:
+            resultsFurtherFiltered = searchingWithQueryDev(
+                results, searchQuery, lat, long
+            )
     return {
         "results": results if searchQuery == "" else resultsFurtherFiltered,
         "count": len(results if searchQuery == "" else resultsFurtherFiltered),

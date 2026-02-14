@@ -45,12 +45,13 @@ def createIndex():
                 "year_installed": {"type": "text"},
                 "artist_credit": {"type": "text"},
                 "location_description": {"type": "text"},
+                "latitude": {"type": "float"},
+                "longitude": {"type": "float"},
             }
         },
     }
-
-    if not client.indices.exists(index=index_name):
-        client.indices.create(index=index_name, body=index_body, ignore=400)
+    client.indices.delete(index=index_name)
+    client.indices.create(index=index_name, body=index_body, ignore=400)
 
 
 def addResultToIndex(muralCoords):
@@ -66,6 +67,8 @@ def addResultToIndex(muralCoords):
             "year_installed": muralCoord.get("year_installed", ""),
             "artist_credit": muralCoord.get("artist_credit", ""),
             "location_description": muralCoord.get("location_description", ""),
+            "latitude": muralCoord.get("latitude", None),
+            "longitude": muralCoord.get("longitude", None),
         }
         client.index(
             index=index_name, body=document, id=muralCoord["mural_registration_id"]
@@ -73,27 +76,40 @@ def addResultToIndex(muralCoords):
 
 
 def searchIndex(query_string):
-    query = {
-        "query": {
-            "multi_match": {
-                "query": query_string,
-                "type": "best_fields",
-                "operator": "or",
-                "fields": [
-                    "artwork_title^2.2",
-                    "description_of_artwork^1.2",
-                    "street_address^1.1",
-                    "media^1",
-                    "affiliated_or_commissioning^1",
-                    "year_installed^1",
-                    "artist_credit^2",
-                    "location_description^1.1",
-                ],
-            }
-        },
-        "sort": [{"_score": {"order": "desc"}}],
-        "size": 2000,
-    }
+    isExactSearch = False
+    if (
+        query_string
+        and len(query_string) > 1
+        and query_string[-1] == '"'
+        and query_string[0] == '"'
+    ):
+        isExactSearch = True
+    if isExactSearch:
+        query = {
+            "query": {"match_phrase": {"artwork_title": query_string.replace('"', "")}}
+        }
+    else:
+        query = {
+            "query": {
+                "multi_match": {
+                    "query": query_string,
+                    "type": "best_fields",
+                    "operator": "or",
+                    "fields": [
+                        "artwork_title^2.2",
+                        "description_of_artwork^1.2",
+                        "street_address^1.1",
+                        "media^1",
+                        "affiliated_or_commissioning^1",
+                        "year_installed^1",
+                        "artist_credit^2",
+                        "location_description^1.1",
+                    ],
+                }
+            },
+            "sort": [{"_score": {"order": "desc"}}],
+            "size": 2000,
+        }
 
     response = client.search(
         body=query,

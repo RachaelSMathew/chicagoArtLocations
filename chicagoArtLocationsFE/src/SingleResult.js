@@ -1,34 +1,40 @@
-import './App.css';
-import './SingleResult.css';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchResultsContext } from './SearchResultsProvider';
-import { useWindowDimContext } from './WindowDimInfoProvider';
-import { useSingleSearchResultContext } from './SingleSearchResultProvider';
+import "./App.css";
+import "./SingleResult.css";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useSearchResultsContext } from "./SearchResultsProvider";
+import { useWindowDimContext } from "./WindowDimInfoProvider";
+import { useSingleSearchResultContext } from "./SingleSearchResultProvider";
 
-export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) {
+export default function SingleResult({
+  singleRes,
+  indexKey,
+  resultsScrollRef,
+}) {
   const artWorkData = singleRes[1];
   const dist = singleRes[0];
   const [showMore, setShowMore] = useState(false);
   const [hoverOnline, setHoverOnline] = useState(false);
   const [hoverDir, setHoverDir] = useState(false);
-  const [svgPath, setSvgPath] = useState('');
+  const [svgPath, setSvgPath] = useState("");
   const resultRef = useRef(null);
   const targetRef = useRef(null);
   const artistDes = useRef(null);
   const { windowHeight } = useWindowDimContext();
   const [insideViewport, setInsideView] = useState(false); // handles the text border path
   const [scrolledPast10Percent, setScrolledPast10Percent] = useState(false);
-  const { setFinalSearchInput, results, setLastVisible } = useSearchResultsContext();
+  const { setFinalSearchInput, results, setLastVisible } =
+    useSearchResultsContext();
   const { createURLs } = useSingleSearchResultContext();
   const { windowWidth } = useWindowDimContext();
   const [directionsURL, setDirectionURL] = useState(null);
-  const [urlOnline, setURL] = useState('');
+  const [urlOnline, setURL] = useState("");
   const [hasOverflow, setHasOverflow] = useState(false);
 
   const checkOverflow = () => {
     if (artistDes.current) {
       setHasOverflow(
-        artistDes.current && artistDes.current.scrollHeight > artistDes.current.clientHeight
+        artistDes.current &&
+          artistDes.current.scrollHeight > artistDes.current.clientHeight,
       );
     }
   };
@@ -36,23 +42,29 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
     if (singleRes && artWorkData.description_of_artwork) {
       let str = artWorkData.description_of_artwork;
       let index = str.indexOf(
-        artWorkData.artist_credit.replace(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g, '')
+        artWorkData.artist_credit.replace(
+          /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g,
+          "",
+        ),
       );
       while (index !== -1) {
         str =
           str.slice(0, index) +
           '<span style="font-weight: 500">' +
           str.slice(index, index + artWorkData.artist_credit.length) +
-          '</span>' +
+          "</span>" +
           str.slice(index + artWorkData.artist_credit.length);
         index = str.indexOf(
-          artWorkData.artist_credit.replace(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g, ''),
-          index + 33
+          artWorkData.artist_credit.replace(
+            /[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g,
+            "",
+          ),
+          index + 33,
         );
       }
       return str;
     } else {
-      return '';
+      return "";
     }
   }, [singleRes]);
 
@@ -61,7 +73,8 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
     var containerTop = resultRef.current.getBoundingClientRect().top; // https://stackoverflow.com/a/55182563
     setInsideView(containerTop >= 0 && containerTop <= windowHeight);
     if (indexKey === results.length - 1) {
-      setLastVisible(containerTop >= 0 && containerTop <= windowHeight);
+      var containerBottom = resultRef.current.getBoundingClientRect().bottom;
+      setLastVisible(containerBottom >= 0 && containerBottom <= windowHeight);
     } // scrolled to bottom of results
     setScrolledPast10Percent(containerTop < 300);
   }
@@ -69,10 +82,11 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
   useEffect(() => {
     createURLs(setDirectionURL, setURL, singleRes);
     onScroll();
-    if (resultsScrollRef.current) resultsScrollRef.current.addEventListener('scroll', onScroll);
+    if (resultsScrollRef.current)
+      resultsScrollRef.current.addEventListener("scroll", onScroll);
     return () => {
       if (resultsScrollRef.current)
-        resultsScrollRef.current.removeEventListener('scroll', onScroll);
+        resultsScrollRef.current.removeEventListener("scroll", onScroll);
     };
   });
 
@@ -84,9 +98,15 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
     }
   }
   const lenBorderResult = useMemo(() => {
-    if (insideViewport && resultRef.current && singleRes && artWorkData.artist_credit) {
+    if (
+      insideViewport &&
+      resultRef.current &&
+      singleRes &&
+      artWorkData.artist_credit
+    ) {
       return (
-        (resultRef.current.offsetHeight * 2 + resultRef.current.offsetWidth * 2) /
+        (resultRef.current.offsetHeight * 2 +
+          resultRef.current.offsetWidth * 2) /
         artWorkData.artist_credit.length
       );
     } else {
@@ -116,46 +136,68 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
     <>
       <div
         className="containerRes"
-        onClick={() => setFinalSearchInput(artWorkData.artwork_title ?? 'untitled')}
+        onClick={() =>
+          // do exact searching when you click on a result
+          setFinalSearchInput(
+            '"' + artWorkData.artwork_title + '"' ?? "untitled",
+          )
+        }
         ref={resultRef}
       >
         <svg
           className="containerPathText"
-          width={resultRef.current ? resultRef.current.offsetWidth * 2 : '150%'}
-          height={resultRef.current ? resultRef.current.offsetHeight * 2 : '150%'}
+          width={resultRef.current ? resultRef.current.offsetWidth * 2 : "150%"}
+          height={
+            resultRef.current ? resultRef.current.offsetHeight * 2 : "150%"
+          }
         >
-          <path id={'borderArt' + indexKey} d={svgPath} fill="none" stroke="none" strokeWidth="2" />
+          <path
+            id={"borderArt" + indexKey}
+            d={svgPath}
+            fill="none"
+            stroke="none"
+            strokeWidth="2"
+          />
           <text>
-            <textPath href={'#borderArt' + indexKey} fill="#d3962b" fontSize={12}>
-              {(artWorkData.artist_credit + '  ● ').repeat(lenBorderResult)}
+            <textPath
+              href={"#borderArt" + indexKey}
+              fill="#d3962b"
+              fontSize={12}
+            >
+              {(artWorkData.artist_credit + "  ● ").repeat(lenBorderResult)}
             </textPath>
           </text>
         </svg>
         {/* sticky header for single result*/}
-        <div className="stickyHeader" style={{ opacity: scrolledPast10Percent ? 1 : 0 }}>
-          <i className="titleStickyHeader">{artWorkData.artwork_title ?? 'untitled'}</i>
-          <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div
+          className="stickyHeader"
+          style={{ opacity: scrolledPast10Percent ? 1 : 0 }}
+        >
+          <i className="titleStickyHeader">
+            {artWorkData.artwork_title ?? "untitled"}
+          </i>
+          <div style={{ display: "flex", flexDirection: "row" }}>
             {urlOnline !== null && (
-              <b style={{ letterSpacing: '1.5px', cursor: 'pointer' }}>
+              <b style={{ letterSpacing: "1.5px", cursor: "pointer" }}>
                 <a
-                  style={{ color: 'inherit', textDecoration: 'none' }}
+                  style={{ color: "inherit", textDecoration: "none" }}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                   href={urlOnline}
                 >
                   ONLINE
                 </a>
               </b>
             )}
-            <div style={{ width: '20px' }} />
+            <div style={{ width: "20px" }} />
             {directionsURL !== null && (
-              <b style={{ letterSpacing: '1.5px', cursor: 'pointer' }}>
+              <b style={{ letterSpacing: "1.5px", cursor: "pointer" }}>
                 <a
-                  style={{ color: 'inherit', textDecoration: 'none' }}
+                  style={{ color: "inherit", textDecoration: "none" }}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                   href={directionsURL}
                 >
                   DIRECTIONS
@@ -165,12 +207,16 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
           </div>
         </div>
         <div
-          style={{ display: 'flex', gap: 10, flexDirection: windowWidth < 370 ? 'column' : 'row' }}
+          style={{
+            display: "flex",
+            gap: 10,
+            flexDirection: windowWidth < 370 ? "column" : "row",
+          }}
         >
           <span ref={targetRef} className="title">
-            <i>{artWorkData.artwork_title ?? 'untitled'}</i>
+            <i>{artWorkData.artwork_title ?? "untitled"}</i>
           </span>
-          <div style={{ paddingTop: '30px', flex: 2 }}>
+          <div style={{ paddingTop: "30px", flex: 2 }}>
             <p className="distResult">{Math.round(dist * 100) / 100} mi.</p>
             <div className="descriptionRes">
               {urlOnline && (
@@ -179,14 +225,14 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
                   onMouseLeave={() => setHoverOnline(false)}
                   onMouseEnter={() => setHoverOnline(true)}
                   style={{
-                    textDecoration: 'none',
-                    background: hoverOnline ? '#ecd3c2' : '#c08251',
-                    color: hoverOnline ? '#c08251' : '#ecd3c2',
-                    fontStyle: hoverOnline ? 'oblique' : 'normal',
+                    textDecoration: "none",
+                    background: hoverOnline ? "#ecd3c2" : "#c08251",
+                    color: hoverOnline ? "#c08251" : "#ecd3c2",
+                    fontStyle: hoverOnline ? "oblique" : "normal",
                   }}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                   href={urlOnline}
                 >
                   <b>ONLINE</b>
@@ -198,13 +244,13 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
                   onMouseLeave={() => setHoverDir(false)}
                   onMouseEnter={() => setHoverDir(true)}
                   style={{
-                    textDecoration: 'none',
-                    background: hoverDir ? '#588BA7' : '#c2a71e',
-                    color: !hoverDir ? '#2E85D1' : '#c2a71e',
+                    textDecoration: "none",
+                    background: hoverDir ? "#588BA7" : "#c2a71e",
+                    color: !hoverDir ? "#2E85D1" : "#c2a71e",
                   }}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                   href={directionsURL}
                 >
                   <b>DIRECTIONS</b>
@@ -216,13 +262,19 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
               ref={artistDes}
               onClick={() => (showMore ? setShowMore(false) : null)}
               style={{
-                marginBottom: !artWorkData.description_of_artwork ? '10px' : '0px',
-                maxHeight: showMore ? '17lh' : '2lh',
+                marginBottom: !artWorkData.description_of_artwork
+                  ? "10px"
+                  : "0px",
+                maxHeight: showMore ? "17lh" : "2lh",
               }}
               dangerouslySetInnerHTML={{ __html: innerHTML }}
             />
             {artWorkData.description_of_artwork && showMore && (
-              <p key={indexKey} className="lessMoreButton" onClick={() => setShowMore(false)}>
+              <p
+                key={indexKey}
+                className="lessMoreButton"
+                onClick={() => setShowMore(false)}
+              >
                 less
               </p>
             )}
@@ -230,7 +282,7 @@ export default function SingleResult({ singleRes, indexKey, resultsScrollRef }) 
               <p
                 key={indexKey}
                 className="lessMoreButton"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   setShowMore(true);
                 }}
