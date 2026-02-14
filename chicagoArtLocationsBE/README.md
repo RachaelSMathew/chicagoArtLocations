@@ -65,7 +65,7 @@ If you want to ensure the case insensitiveness at query time do this
 
 **Open search domain service** relies on instance types, storage, and ocu :(
 
-<img width="279" height="362" alt="Screenshot 2026-01-22 at 10 36 17 PM" src="https://github.com/user-attachments/assets/4275de95-723e-4455-b8f5-779a94088763" /><img width="280" height="524" alt="Screenshot 2026-01-21 at 12 11 56 AM" src="https://github.com/user-attachments/assets/01bbef31-58ef-4c96-affe-67678b28543e" /><img width="286" height="361" alt="Screenshot 2026-01-21 at 5 39 52 PM" src="https://github.com/user-attachments/assets/1dcc3296-18ea-44b1-b81b-e02372a9f87d" />
+<img width="279" height="362" alt="Screenshot 2026-01-22 at 10 36 17 PM" src="https://github.com/user-attachments/assets/4275de95-723e-4455-b8f5-779a94088763" /><img width="280" height="324" alt="Screenshot 2026-01-21 at 12 11 56 AM" src="https://github.com/user-attachments/assets/01bbef31-58ef-4c96-affe-67678b28543e" /><img width="286" height="361" alt="Screenshot 2026-01-21 at 5 39 52 PM" src="https://github.com/user-attachments/assets/1dcc3296-18ea-44b1-b81b-e02372a9f87d" />
 
 #### [How AWS Serverless Pricing Works](https://aws.amazon.com/opensearch-service/pricing/)
 
