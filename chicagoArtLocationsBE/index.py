@@ -47,11 +47,18 @@ async def startup_event():
         print(isTreeBalanced(kdTree))
 
 
+## handles basic search and exact search when searching in production env
 def searchingWithQueryProd(results, searchQuery, lat, long):
     global kdTree
     resultsFurtherFiltered = []
     stillSearching = True
     numClosestNeighbors = 20
+    isExactSearch = (
+        searchQuery
+        and len(searchQuery) > 1
+        and searchQuery[-1] == '"'
+        and searchQuery[0] == '"'
+    )
     while stillSearching:
         for result in results:
             resultConcatenated = (
@@ -66,7 +73,12 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
                 )
                 + result[1]["street_address"]
             )
-            if searchQuery.lower() in (resultConcatenated).lower():
+            if (
+                isExactSearch
+                and result[1]["artwork_title"].lower() == searchQuery.lower()
+            ):
+                resultsFurtherFiltered.append(copy.deepcopy(result))
+            elif searchQuery.lower() in (resultConcatenated).lower():
                 resultsFurtherFiltered.append(copy.deepcopy(result))
 
         if (
@@ -81,7 +93,7 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
     return resultsFurtherFiltered
 
 
-## return all results from opensearch at once
+## handles exact search and return all results from opensearch at once
 def exactSearchingWithQueryDev(searchQuery, lat, long):
     opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
     resultsFormatted = []
@@ -109,6 +121,7 @@ def exactSearchingWithQueryDev(searchQuery, lat, long):
     return resultsFormatted
 
 
+# handles search using opensearch (not exact search)when searching in development environment
 def searchingWithQueryDev(results, searchQuery, lat, long):
     global kdTree
     resultsFurtherFiltered = []
