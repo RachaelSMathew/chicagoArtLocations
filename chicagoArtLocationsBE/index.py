@@ -62,20 +62,16 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
     while stillSearching:
         for result in results:
             resultConcatenated = (
-                result[1]["artwork_title"]
+                result[1].get("artwork_title", "")
                 + " "
-                + result[1]["artist_credit"]
+                + result[1].get("artist_credit", "")
                 + " "
-                + (
-                    result[1]["description_of_artwork"] + " "
-                    if "description_of_artwork" in result[1]
-                    else ""
-                )
-                + result[1]["street_address"]
+                + (result[1].get("description_of_artwork", "") + " ")
+                + result[1].get("street_address", "")
             )
             if (
                 isExactSearch
-                and result[1]["artwork_title"].lower() == searchQuery.lower()
+                and result[1].get("artwork_title", "").lower() == searchQuery.lower()
             ):
                 resultsFurtherFiltered.append(copy.deepcopy(result))
             elif searchQuery.lower() in (resultConcatenated).lower():
