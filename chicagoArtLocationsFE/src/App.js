@@ -10,31 +10,16 @@ import { useSearchResultsContext } from "./SearchResultsProvider";
 function App() {
   const { windowWidth } = useWindowDimContext();
   let [loadingStr, setLoadingStr] = useState("");
-  const { results } = useSearchResultsContext();
+  const { isLoading } = useSearchResultsContext();
   const fullLoadingStr = "loading...";
   let interval = null;
-
-  useEffect(() => {
-    if (results && results.length > 0) {
-      clearInterval(interval);
-      setLoadingStr("");
-    } else {
-      interval = setInterval(() => {
-        setLoadingStr((prev) => {
-          if (prev.length === fullLoadingStr.length) return "";
-          return prev + fullLoadingStr.charAt(prev.length);
-        });
-      }, 300);
-    }
-    return () => clearInterval(interval); // Cleanup
-  }, [results]);
 
   return (
     <>
       <Map />
       <Pulsating width={windowWidth} />
       <SearchBar />
-      <p className="loading-text">{loadingStr}</p>
+      {isLoading && <div className="spinner" />}
       <div style={{ height: "300px" }} /> {/** spacer */}
       <SearchResults />
     </>

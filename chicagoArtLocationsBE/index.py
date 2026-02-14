@@ -71,7 +71,8 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
             )
             if (
                 isExactSearch
-                and result[1].get("artwork_title", "").lower() == searchQuery.lower()
+                and result[1].get("artwork_title", "").lower()
+                == searchQuery.replace('"', "").lower()
             ):
                 resultsFurtherFiltered.append(copy.deepcopy(result))
             elif searchQuery.lower() in (resultConcatenated).lower():

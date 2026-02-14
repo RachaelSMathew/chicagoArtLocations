@@ -14,9 +14,9 @@ function SearchResultsProvider({ children }) {
       : "https://stationinformation.onrender.com";
   const [results, setResults] = useState(null);
   const [lastResultVisible, setLastVisible] = useState(false);
-  const [spinnerDisplay, setSpinnerDisplay] = useState("block");
   const [bounds, setBounds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const controller = new AbortController();
   const [finalSearchInput, setFinalSearchInput] =
     useState(
@@ -96,6 +96,7 @@ function SearchResultsProvider({ children }) {
 
   useEffect(() => {
     if (!currentLocation) return;
+    setIsLoading(true);
     axios
       .get(
         `${get_URL}/newsearch/?lat=` +
@@ -112,15 +113,18 @@ function SearchResultsProvider({ children }) {
       })
       .catch((err) => {
         console.log(`go to site: ${get_URL}`);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [currentLocation]);
 
   useEffect(() => {
     /*** LOAD MORE RESULTS WHEN USER REACHES BOTTOM */
-    if (lastResultVisible && !isLoading) {
+    if (lastResultVisible && !isLoadingMore) {
       if (results && results.length) {
         const farthestDistance = results[results.length - 1][0] + 0.0001;
-        setIsLoading(true);
+        setIsLoadingMore(true);
         axios
           .get(
             `${get_URL}/newsearch/?lat=${currentLocation.latitude}&long=${currentLocation.longitude}&searchQuery=${finalSearchInput}&minDistance=${farthestDistance}`,
@@ -128,17 +132,15 @@ function SearchResultsProvider({ children }) {
           )
           .then((res) => {
             if (res.data.results.length === 0) {
-              setSpinnerDisplay("none");
             } else {
               setResults([...results, ...res.data.results]);
             }
           })
           .catch((err) => {
             /** no more results available */
-            setSpinnerDisplay("none");
           })
           .finally(() => {
-            setIsLoading(false);
+            setIsLoadingMore(false);
           });
       }
     }
@@ -174,12 +176,16 @@ function SearchResultsProvider({ children }) {
       currentLocation.latitude &&
       currentLocation.longitude
     ) {
+      setIsLoading(true);
       await axios
         .get(
           `${get_URL}/newsearch/?lat=${currentLocation.latitude}&long=${currentLocation.longitude}&minDistance=${0}&searchQuery=${searchQuery}`,
         )
         .then((res) => {
           setResults(res.data.results);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }
@@ -189,12 +195,13 @@ function SearchResultsProvider({ children }) {
     setResults,
     lastResultVisible,
     setLastVisible,
-    spinnerDisplay,
     bounds,
     finalSearchInput,
     setFinalSearchInput,
     findBounds,
     currentLocation,
+    isLoading,
+    isLoadingMore,
   };
 
   return (

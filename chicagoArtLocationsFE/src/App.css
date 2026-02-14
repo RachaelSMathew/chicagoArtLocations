@@ -93,14 +93,24 @@ body {
 
 /**** SPINNER (https://codepen.io/Colt/pen/BarvbKR?editors=0100) **/
 .spinner {
-  height: 60px;
-  width: 60px;
+  z-index: 1000;
+  position: absolute;
+  height: 120px;
+  width: 120px;
+  top: 45%;
+  left: 45%;
   border: 6px solid;
   border-color: #a54340 transparent #a54340 transparent;
   border-radius: 50%;
   animation: spin 1.3s ease infinite;
   flex: 0 0 auto;
   /** same as flex: none, div does not shrink or grow (the 0 is for flex-grow and flex-shrink)**/
+}
+.spinner--load-more {
+  height: 60px;
+  width: 60px;
+  position: static;
+  /* top and left property are nullified when position is static */
 }
 
 @keyframes spin {
