@@ -1,7 +1,7 @@
 ## Pipeline
 1. Render taking the [chicago coordiates json](https://data.cityofchicago.org/resource/we8h-apcf.json) and converting to a KD Tree and stores it
 2. KD Tree: finds the n closest locations to the current location with a minimum distance of minDistance 
-3. In Development env: Opensearch is __only used locally__ to do advanced search of the description, artists name, location etc.
+3. In Development env: Opensearch is __only used locally__ ([why?](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/README.md#why-im-using-opensearch-locally-only)) to do advanced search of the description, artists name, location etc.
 4. In Prod env: Basic search is used which involves searching for the query within the concatenated version of mural fields.
 5. If you click on a map marker or a search result --> find a search result that has the exact query in it's title (done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
 
@@ -59,19 +59,24 @@ If you want to ensure the case insensitiveness at query time do this
   }
 }
 
-## Why I'm using OpenSearch locally only
+## Why I'm using OpenSearch locally only: the bill
 
-Had to delete my open search collection bc wtf was that bill:
 <img width="1149" height="450" alt="Screenshot 2026-01-20 at 11 59 07 PM" src="https://github.com/user-attachments/assets/c1b94a43-30c3-433c-8446-43e3a6c6608f" />
-<img width="280" height="524" alt="Screenshot 2026-01-21 at 12 11 56 AM" src="https://github.com/user-attachments/assets/01bbef31-58ef-4c96-affe-67678b28543e" />
-<img width="286" height="361" alt="Screenshot 2026-01-21 at 5 39 52 PM" src="https://github.com/user-attachments/assets/1dcc3296-18ea-44b1-b81b-e02372a9f87d" />
 
-Open search domain service relies on instance types, storage and ocu :(
-<img width="279" height="362" alt="Screenshot 2026-01-22 at 10 36 17 PM" src="https://github.com/user-attachments/assets/4275de95-723e-4455-b8f5-779a94088763" />
+**Open search domain service** relies on instance types, storage, and ocu :(
+
+<img width="279" height="362" alt="Screenshot 2026-01-22 at 10 36 17 PM" src="https://github.com/user-attachments/assets/4275de95-723e-4455-b8f5-779a94088763" /><img width="280" height="524" alt="Screenshot 2026-01-21 at 12 11 56 AM" src="https://github.com/user-attachments/assets/01bbef31-58ef-4c96-affe-67678b28543e" /><img width="286" height="361" alt="Screenshot 2026-01-21 at 5 39 52 PM" src="https://github.com/user-attachments/assets/1dcc3296-18ea-44b1-b81b-e02372a9f87d" />
+
+#### [How AWS Serverless Pricing Works](https://aws.amazon.com/opensearch-service/pricing/)
+
+<img width="438" height="443" alt="Screenshot 2026-02-14 at 4 42 18 PM" src="https://github.com/user-attachments/assets/993ff50e-6ced-4d0e-8bd2-7e29c751935b" />
+<img width="1253" height="232" alt="Screenshot 2026-02-14 at 4 45 14 PM" src="https://github.com/user-attachments/assets/72b329ab-2f53-4f3a-9de6-8a8ae4f8c43d" />
+
+
+#### How I set up OpenSearch Collections settings: 
+
 <img width="932" height="673" alt="Screenshot 2026-01-20 at 11 53 25 PM" src="https://github.com/user-attachments/assets/580e8612-80a9-4971-8268-c6b9e4183f8c" />
 
-nevermind, the bill is from open search domains not serverless collections! 
-Never mind again!!
 <img width="1440" height="665" alt="Screenshot 2026-01-20 at 11 52 42 PM" src="https://github.com/user-attachments/assets/31d48fe6-0dcb-4338-a1f0-493e1052566e" />
 <img width="1440" height="679" alt="Screenshot 2026-01-20 at 11 52 35 PM" src="https://github.com/user-attachments/assets/0dce3321-d4b0-4634-8c4d-41d82d0e61b7" />
 <img width="1440" height="755" alt="Screenshot 2026-01-20 at 11 52 29 PM" src="https://github.com/user-attachments/assets/615fccd6-31f5-4850-aa6d-6c102935c8e2" />
