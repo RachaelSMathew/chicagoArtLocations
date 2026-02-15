@@ -1,7 +1,29 @@
 # chicagoArtLocations
 
-Summary: Taking location data from [here](https://data.cityofchicago.org/resource/we8h-apcf.json) ([Official website](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb))and finding the nearest art locations to the user's current coordinate. The user can search in the search bar to find the closest points that also contain a certain keyword. When the search query has quotations around it, then an exact search is done, comparing the query to the artwork_title field. Some results will initially appear, and then when the user scrolls to the bottom a loading icon should appear, and then more results should appear.
- 
+Using the [official Chicago city data catalogue](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) and sending a GET request to this endpoint which stores location data: [here](https://data.cityofchicago.org/resource/we8h-apcf.json), I am finding the nearest art locations to the user's current coordinate. 
+
+After the initial load, 20 results will initially appear, and when the user scrolls to the bottom, a loading icon should appear, and then more results should appear. The user can use the search bar to find the closest points that also contain a certain keyword. When the search query has quotations around it, then an exact search is done, searching for an artwork_title field that matches the query. Exact search(can also be triggered by clicking on a search result or a map marker) will return all the results at once because the results are taken directly from OpenSearch.
+
+## Tools used
+- BE
+  - KD Tree
+    - to find 20 closest locations to the current point
+  - Binary tree
+    - to sort the 20 locations the KD tree returns
+    - has the same sorting runtime and storage as `array.sort()`
+  - Opensearch (only used locally)
+    - uses advanced search to find a location that contains or partially contains the query search
+  - Render
+    - stores and creates the KD Tree used to find k nearest points to current location  
+  - FastAPI
+    - used to create the endpoint to do a search (`/newsearch/`), which is called from the FE
+  - Python 
+- FE
+  - mapbox
+  - React.js
+  - haversine-distance npm package
+  - axios
+
 ## How to run:
 - clone repo
   - Front End:
