@@ -31,11 +31,18 @@
          &searchQuery=${searchQuery},
    )
    ```
-**On every update of the search results array**
+**Every time the results array gets updated**:
 1. collect all the mural_registration_ids of each result(every result has a unique one)
 2. remove all markers that are not in the results collection of mural_registration_ids
 3. Go through each result and create a new marker of that result if it doesn't exist in the DOM already 
-    
+
+**Exact Search**
+- How is exact search triggered?
+  1. when a map marker is clicked --> search input is updated with markers name and quotes around it
+  2. when a search result is clicked --> search input is updated with search result's name and quotes around it
+  3. manually add quotes to the search query in the search bar
+- BE there is a condition to check if a search is an exact search (i.e., it is surrounded by quotes)
+
 **Map Animations**
 
 - when results are updated:
@@ -60,11 +67,11 @@
     }
   }
   ```
-- when a marker is clicked
+- when a marker is clicked:
   
-  the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
+  - the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
   
-  when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
+  - when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
   
 ## On formatting and making files more readable and organized (prettier and eslit)
 
@@ -90,7 +97,7 @@ Install prettier as a viscose extension
 <img width="456" height="257" alt="Screenshot 2026-01-25 at 10 17 10 PM" src="https://github.com/user-attachments/assets/2a498fd6-fdd5-4595-b67e-6e5e3e29c760" />
 
 
-Then add into settings json
+Then add into settings.json
 * editor.formatOnSave: Runs Prettier (breaks long lines)
 * source.fixAll.eslint: Fixes auto-fixable ESLint rules
 
@@ -99,7 +106,7 @@ Then add into settings json
 
 <img width="554" height="89" alt="Screenshot 2026-01-25 at 10 21 20 PM" src="https://github.com/user-attachments/assets/cb07617a-5e51-4994-8620-bfe9739b7a89" />
 
-Removes any conflicts between eslint rules and prettier when it comes to formatting rule—> eslit turns of their formatting rules and prettier handles that instead
+Removes any conflicts between eslint rules and prettier when it comes to formatting rule—> eslit turns off their formatting rules and prettier handles that instead
 Removes fighting between ESLint and prettier 
 
 4. Npc tsc -p . —noEmit
