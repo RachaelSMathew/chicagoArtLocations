@@ -3,7 +3,7 @@
 2. KD Tree: finds the n closest locations to the current location with a minimum distance of minDistance 
 3. In Development env: Opensearch is __only used locally__ ([why?](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/README.md#why-im-using-opensearch-locally-only)) to do advanced search of the description, artists name, location etc.
 4. In Prod env: Basic search is used which involves searching for the query within the concatenated version of mural fields.
-5. If you click on a map marker or a search result --> find a search result that has the exact query in it's title (done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
+5. If you click on a map marker or a search result --> Exact search is used to find results whose artwork_title field match the query (this is done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
 
 ### If OpenSearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
@@ -28,8 +28,8 @@ In repo secrets and defining env variables in the GitHub workflow yml file
 
 <img width="584" height="424" alt="Screenshot 2026-01-19 at 1 21 25 AM" src="https://github.com/user-attachments/assets/86a94ce3-b951-4236-8418-759d9eaa3f13" />
 
-## How to make KD Tree more faster
-**Note**: KD Trees guarantee they will return the K closest points to the query point, but it will not guarantee that those K points will be returned in order 
+## How to make KD Tree more accurate and faster
+**Note**: KD Trees guarantee they will return the K closest points to the query point, but <ins>will not guarantee that those K points will be returned in order</ins> 
 
 Want to test accuracy of my KDTree?: command `pytest` in root directory will run `chicagoArtLocationsBE/test_material/kd_tree_validity_test.py`
 
@@ -37,7 +37,7 @@ Want to test accuracy of my KDTree?: command `pytest` in root directory will run
     - this results in better spatial partioning, and the tree will be more balanced
     - this is being done using the [whichAxisShouldSplitBeDone function](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/CoreKDFunctions.py#L19)
 
-- [ ] using a bucket pr KD tree (i.e., an rednaxela tree) 
+- [ ] using a bucket pr KD tree (i.e., [an rednaxela tree](https://gitlab.com/agschultz/robocode-knn-benchmark/-/blob/master/ags/utils/dataStructures/trees/thirdGenKD/KdTree.java?ref_type=heads) where only leaf nodes store data) 
 
 ## OpenSearch Query and indexing:
 
