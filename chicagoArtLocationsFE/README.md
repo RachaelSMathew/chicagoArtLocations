@@ -31,11 +31,18 @@
          &searchQuery=${searchQuery},
    )
    ```
-**On every update of the search results array**
+**Every time the results array gets updated**:
 1. collect all the mural_registration_ids of each result(every result has a unique one)
 2. remove all markers that are not in the results collection of mural_registration_ids
 3. Go through each result and create a new marker of that result if it doesn't exist in the DOM already 
-    
+
+**Exact Search**
+- How is exact search triggered?
+  1. when a map marker is clicked --> search input is updated with markers name and quotes around it
+  2. when a search result is clicked --> search input is updated with search result's name and quotes around it
+  3. manually add quotes to the search query in the search bar
+- BE there is a condition to check if a search is an exact search (i.e., it is surrounded by quotes)
+
 **Map Animations**
 
 - when results are updated:
@@ -60,47 +67,44 @@
     }
   }
   ```
-- when a marker is clicked
+- when a marker is clicked:
   
-  the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
+  - the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
   
-  when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
+  - when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
   
 ## On formatting and making files more readable and organized (prettier and eslit)
 
-1. eslint vs prettier 
-
-Prettier handles formatting (max line length) —> makes the code prettier
-ESLint handle formatting, and code quality(unused vars) 
-
-
-eslint rules that can be auto-fixed: https://eslint.org/docs/latest/rules/ (the auto-fix ones have a wrench next to them)
-Prettier can auto-fix 
+| Prettier | ESLint |
+| :--- | :---: |
+| handles **formatting** (e.g., max line length, indentation) and makes the code prettier | a **linter** that provides warnings about bugs and code quality like unused variables and console logs |
+| automatically format code | only some [rules](https://eslint.org/docs/latest/rules/) can be auto-fixed. the auto-fix ones have a wrench next to them |
+| Minimal configuration needed to help promote formatting consistency across teams | can be highly configurable with many rules |
 
 <img width="282" height="206" alt="Screenshot 2026-01-25 at 10 03 17 PM" src="https://github.com/user-attachments/assets/812e0ac9-7d8b-4b47-89eb-3ccfa9b5b6f9" />
-
 
 2. In settings.json
 
 <img width="608" height="139" alt="Screenshot 2026-01-25 at 10 07 20 PM" src="https://github.com/user-attachments/assets/fb3967bf-ba0c-45bb-81e3-5f4153b78e84" />
 
-Set prettier as default formatter:
-Install prettier as a viscose extension 
+Install prettier as a VSCode extension 
+
+Set Prettier as the default formatter
 
 <img width="456" height="257" alt="Screenshot 2026-01-25 at 10 17 10 PM" src="https://github.com/user-attachments/assets/2a498fd6-fdd5-4595-b67e-6e5e3e29c760" />
 
 
-Then add into settings json
-* editor.formatOnSave: Runs Prettier (breaks long lines)
-* source.fixAll.eslint: Fixes auto-fixable ESLint rules
+Then add to settings.json
+* `editor.formatOnSave`: Runs Prettier on save
+* `source.fixAll.eslint`: configures ESLint to fix all auto-fixable ESLint problems 
 
 
 3. Purpose of eslint-config-prettier in eslint.config.mjs file: CONFLICT RESOLUTION
 
 <img width="554" height="89" alt="Screenshot 2026-01-25 at 10 21 20 PM" src="https://github.com/user-attachments/assets/cb07617a-5e51-4994-8620-bfe9739b7a89" />
 
-Removes any conflicts between eslint rules and prettier when it comes to formatting rule—> eslit turns of their formatting rules and prettier handles that instead
-Removes fighting between ESLint and prettier 
+When conflicts can arise between ESLint rules and Prettier when it comes to formatting rules:
+  eslit turns off their formatting rules and prettier handles that instead
 
-4. Npc tsc -p . —noEmit
- noEmit option tells TypeScript that we only want to run type checking and do not want the compiler to output any transpiled code
+4. `Npc tsc -p . —noEmit`
+ `noEmit` option tells TypeScript that we only want to run type checking and do not want the compiler to output any transpiled code
