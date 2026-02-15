@@ -5,7 +5,7 @@
 4. In Prod env: Basic search is used which involves searching for the query within the concatenated version of mural fields.
 5. If you click on a map marker or a search result --> find a search result that has the exact query in it's title (done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
 
-### If opensearch has vector search, why not use that instead of a KD Tree?
+### If OpenSearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
 - opensearch's vector search uses [L2 Euclidean distance](https://docs.opensearch.org/latest/vector-search/getting-started/index/#step-1-create-a-vector-index) and not haversine distance
 - opensearch uses KNN search --> KD tree search is faster for lower-dimensional data
@@ -29,8 +29,15 @@ In repo secrets and defining env variables in the GitHub workflow yml file
 <img width="584" height="424" alt="Screenshot 2026-01-19 at 1 21 25 AM" src="https://github.com/user-attachments/assets/86a94ce3-b951-4236-8418-759d9eaa3f13" />
 
 ## How to make KD Tree more faster
-- split on axis that has more variance --> better spatial partioning and tree will be more balanced
-- something for the future: usig a bucket pr kd tree
+**Note**: KD Trees guarantee they will return the K closest points to the query point, but it will not guarantee that those K points will be returned in order 
+
+Want to test accuracy of my KDTree?: command `pytest` in root directory will run `chicagoArtLocationsBE/test_material/kd_tree_validity_test.py`
+
+- [x] split on axis that has more variance
+    - this results in better spatial partioning, and the tree will be more balanced
+    - this is being done using the [whichAxisShouldSplitBeDone function](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/CoreKDFunctions.py#L19)
+
+- [ ] using a bucket pr KD tree (i.e., an rednaxela tree) 
 
 ## OpenSearch Query and indexing:
 
