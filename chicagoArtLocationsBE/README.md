@@ -39,9 +39,13 @@ Want to test accuracy of my KDTree?: command `pytest` in root directory will run
 
 - [ ] using a bucket pr KD tree (i.e., [an rednaxela tree](https://gitlab.com/agschultz/robocode-knn-benchmark/-/blob/master/ags/utils/dataStructures/trees/thirdGenKD/KdTree.java?ref_type=heads) where only leaf nodes store data) 
 
-## OpenSearch Query and indexing:
+## Making search in OpenSearch case-insensitive 
 
-Making search case-insensitive 
+#### Analysis during index time:
+
+Happens when a field is mapped as text in OpenSearch:
+
+```
 {
   "mappings": {
     "properties": {
@@ -51,12 +55,15 @@ Making search case-insensitive
     }
   }
 }
+```
 
-When field is mapped as text in open search, it undergoes analysis during index time —> standard analysis makes the text in document case insensitive (lowercased) so when you do match or query_string against the text field —> it is analyzed (i.e., lowercased)
-indexed data and the query string are lowercased during analysis
+Standard analysis (default analyzer) makes the text in the document case insensitive (lowercased)
+  --> when you do match or query_string against the text field, it's analyzed as lowercase
 
-If you want to ensure the case insensitiveness at query time do this
-("analyzer": "standard”) —> but will get lower performance 
+#### Analysis during query time: 
+
+`("analyzer": "standard”)` in the query **but** lower performance
+```
 {
   "query": {
     "query_string": {
@@ -65,6 +72,7 @@ If you want to ensure the case insensitiveness at query time do this
     }
   }
 }
+```
 
 ## Why I'm using OpenSearch locally only: the bill
 
@@ -137,10 +145,8 @@ Chicago-art data access policy for open search collection:
 ]
 ```
 
-# getClosestLocations
-<img width="395" height="401" alt="Screenshot 2025-12-30 at 12 34 22 AM" src="https://github.com/user-attachments/assets/b01c57da-fc71-4d5f-8f27-5d2bb459b84d" />
+# Example of a data point being stored in KDTree
 
-Example of point data being stored in KDTree:
 ```
 {
   'mural_registration_id': '19117',
