@@ -70,7 +70,7 @@ export default function SingleResult({
     }
   }, [singleRes]);
 
-  function onScroll(e) {
+  function onScroll() {
     if (!resultRef || !resultRef.current) return;
     var containerTop = resultRef.current.getBoundingClientRect().top; // https://stackoverflow.com/a/55182563
     setInsideView(containerTop >= 0 && containerTop <= windowHeight);
@@ -94,18 +94,23 @@ export default function SingleResult({
   useEffect(() => {
     createURLs(setDirectionURL, setURL, singleRes);
     onScroll();
+  }, []);
+
+  useEffect(() => {
     if (indexKey === results.length - 1 && resultRef.current) {
       setStartingContainerBottom(
         resultRef.current.getBoundingClientRect().bottom,
       );
     }
-    if (resultsScrollRef.current)
+
+    if (resultsScrollRef.current) {
       resultsScrollRef.current.addEventListener("scroll", onScroll);
+    }
     return () => {
       if (resultsScrollRef.current)
         resultsScrollRef.current.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }); // no dependency array so that it run after every single render of the component so that the onScroll inside the event listener is not using a stale version of results or startingContainerBottom
 
   function updatePath() {
     if (resultRef.current) {
