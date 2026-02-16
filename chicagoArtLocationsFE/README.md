@@ -72,7 +72,60 @@
   - the search query is updated to be the markers div dataset.key (either `result_artwork.artwork_title` or 'untitled' if the artwork doesn't have a name)
   
   - when a marker is clicked --> finalSearchInput is updated ---> triggers api call ---> results array is updated
-  
+
+## Issues I ran into:
+1. Some searches only result in one result even though OpenSearch says there should be more
+   - the issue: if there is only one search result, the containerBottom starts off already being less than the windowHeight, so if a user manually scrolls to the bottom, the setLastVisible won't register a change and a GET request will not be sent to load more results
+   - the solution: defining `startingContainerBottom` in SingleResult.js at initial load. When scrolling, it checks if the current contaierBottom is less than `startingContainerBottom`
+3. the search results were reloading every time I went to another tab and then returned
+    - the culprit:
+        - `getCurrentLocation` and `watchPosition`
+        - most browsers will pause geolocation updates when the tab is not active
+        - when tab becomes active again, browser delivers any buffered location changes (i.e., it seems watchPosition and getCurrentPosition are only triggered when tab is changed to active or on initial load)
+    - the solution:
+      - adding a function outside of the useEffect in SearchResultsProvider.js that checks the currentLocation and the previous currentLocation for a difference of more than 0.01.
+     ```
+      const isHugeCoordinateDiff = (currentCurrentCoords) => {
+        Math.abs(currentCurrentCoords.latitude - currentLocation.latitude) > 0.01 ||
+        Math.abs(currentCurrentCoords.longitude - currentLocation.longitude) > 0.01;
+      }
+     useEffect(() => {
+      const watchId = navigator.geolocation.watchPosition((success) => {
+       if(isHugeCoordinateDiff) {
+         setCurrLocation(...
+     ```
+
+      - the issue: currentLocation in isHugeCoordinateDiff is a stale value because of possibly timing and race conditions 
+        - Windsurf says it's a closure problem even though isHugeCoordinateDiff is not a closure because it's defined outside the useEffect. **Closures capture variables at creation time, not live references**.
+
+<img width="686" height="228" alt="Screenshot 2026-02-16 at 1 58 06 AM" src="https://github.com/user-attachments/assets/faf75f16-6a7b-4fdf-b863-5fdf8a5c2398" />
+
+
+- a more robust solution: **functional update** (a function inside setState)
+
+     ```
+      useEffect(() => {
+        const watchId = navigator.geolocation.watchPosition((success) => {
+          setCurrLocation((prevLocation) => { // Guarantee that prevLocation is the most recent state of currLocation
+            const isHugeCoordinateDiff =
+              !prevLocation ||
+              Math.abs(success.coords.latitude - prevLocation.latitude) > 0.01 ||
+              Math.abs(success.coords.longitude - prevLocation.longitude) > 0.01;
+    
+            if (isHugeCoordinateDiff) {
+              return {
+                latitude: success.coords.latitude,
+                longitude: success.coords.longitude,
+                zoom: 10,
+              };
+            }
+            return prevLocation; // new state value, in this case, no change to value made
+          });
+        });
+       ...
+     ```
+
+    
 ## On formatting and making files more readable and organized (prettier and eslit)
 
 | Prettier | ESLint |
