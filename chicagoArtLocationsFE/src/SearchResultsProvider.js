@@ -33,10 +33,20 @@ function SearchResultsProvider({ children }) {
       });
     });
     const watchId = navigator.geolocation.watchPosition((success) => {
-      setCurrLocation({
-        latitude: success.coords.latitude,
-        longitude: success.coords.longitude,
-        zoom: 10,
+      setCurrLocation((prevLocation) => {
+        const isCoordDifferenceLarge =
+          !prevLocation ||
+          Math.abs(success.coords.latitude - prevLocation.latitude) > 0.01 ||
+          Math.abs(success.coords.longitude - prevLocation.longitude) > 0.01;
+
+        if (isCoordDifferenceLarge) {
+          return {
+            latitude: success.coords.latitude,
+            longitude: success.coords.longitude,
+            zoom: 10,
+          };
+        }
+        return prevLocation; // new state value, in this case, no change to value made
       });
     });
     return () => {
@@ -145,11 +155,16 @@ function SearchResultsProvider({ children }) {
       }
     }
     return () => {
-      // aborts the request if the component unmounts during cleanup
-      controller.abort();
       setIsLoading(false);
     };
   }, [lastResultVisible]);
+
+  useEffect(() => {
+    return () => {
+      // aborts the request if the component unmounts during cleanup
+      controller.abort();
+    };
+  }, []);
 
   // scroll to top of search results when search input changes
   useEffect(() => {

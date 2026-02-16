@@ -25,10 +25,12 @@ export default function SingleResult({
   const { setFinalSearchInput, results, setLastVisible } =
     useSearchResultsContext();
   const { createURLs } = useSingleSearchResultContext();
+  const { isLoading } = useSearchResultsContext();
   const { windowWidth } = useWindowDimContext();
   const [directionsURL, setDirectionURL] = useState(null);
   const [urlOnline, setURL] = useState("");
   const [hasOverflow, setHasOverflow] = useState(false);
+  const [startingContainerBottom, setStartingContainerBottom] = useState(null);
 
   const checkOverflow = () => {
     if (artistDes.current) {
@@ -74,21 +76,36 @@ export default function SingleResult({
     setInsideView(containerTop >= 0 && containerTop <= windowHeight);
     if (indexKey === results.length - 1) {
       var containerBottom = resultRef.current.getBoundingClientRect().bottom;
-      setLastVisible(containerBottom >= 0 && containerBottom <= windowHeight);
+      setLastVisible(
+        containerBottom >= 0 &&
+          containerBottom < startingContainerBottom &&
+          containerBottom <= windowHeight,
+      );
     } // scrolled to bottom of results
     setScrolledPast10Percent(containerTop < 300);
   }
 
   useEffect(() => {
+    if (isLoading) {
+      setStartingContainerBottom(null);
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
     createURLs(setDirectionURL, setURL, singleRes);
     onScroll();
+    if (indexKey === results.length - 1 && resultRef.current) {
+      setStartingContainerBottom(
+        resultRef.current.getBoundingClientRect().bottom,
+      );
+    }
     if (resultsScrollRef.current)
       resultsScrollRef.current.addEventListener("scroll", onScroll);
     return () => {
       if (resultsScrollRef.current)
         resultsScrollRef.current.removeEventListener("scroll", onScroll);
     };
-  });
+  }, []);
 
   function updatePath() {
     if (resultRef.current) {
