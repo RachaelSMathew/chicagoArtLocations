@@ -33,3 +33,9 @@ After the initial load, 20 results will initially appear, and when the user scro
   - Back end
     - `cd chicagoArtLocationsBE`
     - `make dev`
+   
+## Data inconsistencies in the JSON from the Chicago Data Portal
+- Four instances of Alley Wall Project
+- Two instances of Light the spark
+- two instances of Where There Is Discord, Harmony:The Power of Art
+- 32 instances of Las Puertas de Paseo Boricua
