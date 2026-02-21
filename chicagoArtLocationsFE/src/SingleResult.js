@@ -104,12 +104,6 @@ export default function SingleResult({
   }, []);
 
   useEffect(() => {
-    if (indexKey === results.length - 1 && resultRef.current) {
-      setStartingContainerBottom(
-        resultRef.current.getBoundingClientRect().bottom,
-      );
-    }
-
     if (resultsScrollRef.current) {
       resultsScrollRef.current.addEventListener("scroll", onScroll);
     }

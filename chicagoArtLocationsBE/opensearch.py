@@ -50,7 +50,6 @@ def createIndex():
             }
         },
     }
-    client.indices.delete(index=index_name)
     client.indices.create(index=index_name, body=index_body, ignore=400)
 
 
