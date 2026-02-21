@@ -133,31 +133,35 @@ function SearchResultsProvider({ children }) {
     /*** LOAD MORE RESULTS WHEN USER REACHES BOTTOM */
     if (lastResultVisible && !isLoadingMore) {
       if (results && results.length) {
-        const farthestDistance = results[results.length - 1][0] + 0.0001;
-        setIsLoadingMore(true);
-        axios
-          .get(
-            `${get_URL}/newsearch/?lat=${currentLocation.latitude}&long=${currentLocation.longitude}&searchQuery=${finalSearchInput}&minDistance=${farthestDistance}`,
-            { signal: controller.signal },
-          )
-          .then((res) => {
-            if (res.data.results.length === 0) {
-            } else {
-              setResults([...results, ...res.data.results]);
-            }
-          })
-          .catch((err) => {
-            /** no more results available */
-          })
-          .finally(() => {
-            setIsLoadingMore(false);
-          });
+        loadMoreResults();
       }
     }
     return () => {
       setIsLoading(false);
     };
   }, [lastResultVisible]);
+
+  const loadMoreResults = () => {
+    const farthestDistance = results[results.length - 1][0] + 0.0001;
+    setIsLoadingMore(true);
+    axios
+      .get(
+        `${get_URL}/newsearch/?lat=${currentLocation.latitude}&long=${currentLocation.longitude}&searchQuery=${finalSearchInput}&minDistance=${farthestDistance}`,
+        { signal: controller.signal },
+      )
+      .then((res) => {
+        if (res.data.results.length === 0) {
+        } else {
+          setResults([...results, ...res.data.results]);
+        }
+      })
+      .catch((err) => {
+        /** no more results available */
+      })
+      .finally(() => {
+        setIsLoadingMore(false);
+      });
+  };
 
   useEffect(() => {
     return () => {
@@ -217,6 +221,7 @@ function SearchResultsProvider({ children }) {
     currentLocation,
     isLoading,
     isLoadingMore,
+    loadMoreResults,
   };
 
   return (
