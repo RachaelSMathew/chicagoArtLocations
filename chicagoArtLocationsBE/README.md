@@ -74,6 +74,45 @@ Standard analysis (default analyzer) makes the text in the document case insensi
 }
 ```
 
+## Hybrid search in OpenSearch
+Goal: combining keyword search with semantic search (i.e., comparing embeddings)
+
+I was initially wanting to automate the process of creating the index, the search pipeline, the ingest pipeline(see index.py) but that kept on causing OOM errors and `Connection refused errors`
+
+`opensearchpy.exceptions.ConnectionError: ConnectionError(<urllib3.connection.HTTPSConnection object at 0x150d4a150>: Failed to establish a new connection`
+
+I kept getting `opensearchpy.exceptions.TransportError: TransportError(429, 'circuit_breaking_exception', 'Memory Circuit Breaker is open, please check your resources!’)`
+
+Found out: Registering the model causes a lot of memory usage because the Python client is downloading the 400MB model from HuggingFace
+
+<img width="535" height="491" alt="Screenshot 2026-02-22 at 10 01 49 PM" src="https://github.com/user-attachments/assets/59228a4d-a711-470a-86f2-f454b12bccf8" />
+
+
+### Your Python client approach (simultaneous pressure):
+Time 0s: OpenSearch starts up
+
+Time 5s: Python client connects + model download starts + pipeline creation attempts
+
+Time 6s: CIRCUIT BREAKER TRIPS (too much simultaneous pressure)
+
+### Dashboards approach (sequential pressure):
+Time 0s: OpenSearch starts up  
+
+Time 30s: You manually register model (completes)
+
+Time 60s: You manually create pipeline (completes) 
+
+Time 90s: You manually create index (completes)
+
+#### No circuit breaker because each operation finishes before next starts
+
+**So the ML operations DO cause circuit breaker errors - the manual approach just avoids the simultaneous memory pressure that makes your Python client fail.**
+
+Benefits of making requests directly on Opensearch Dashboard API:
+- Dashboards container has its own memory allocation
+- Direct API calls avoid the Python client's memory overhead
+- Model loading happens in the OpenSearch JVM, not your Python process
+
 ## Why I'm using OpenSearch locally only: the bill
 
 <img width="1149" height="450" alt="Screenshot 2026-01-20 at 11 59 07 PM" src="https://github.com/user-attachments/assets/c1b94a43-30c3-433c-8446-43e3a6c6608f" />
