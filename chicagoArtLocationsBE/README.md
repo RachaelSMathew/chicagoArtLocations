@@ -74,7 +74,7 @@ Standard analysis (default analyzer) makes the text in the document case insensi
 }
 ```
 
-## Hybrid search in OpenSearch
+## Hybrid search in OpenSearch and issues with memory when doing automated function from python cliet 
 Goal: combining keyword search with semantic search (i.e., comparing embeddings)
 
 I was initially wanting to automate the process of creating the index, the search pipeline, the ingest pipeline(see index.py) but that kept on causing OOM errors and `Connection refused errors`
@@ -83,17 +83,16 @@ I was initially wanting to automate the process of creating the index, the searc
 
 I kept getting `opensearchpy.exceptions.TransportError: TransportError(429, 'circuit_breaking_exception', 'Memory Circuit Breaker is open, please check your resources!’)`
 
-Found out: Registering the model causes a lot of memory usage because the Python client is downloading the 400MB model from HuggingFace
+Solution: Timing issue, add sleep intervals between each function!
 
-<img width="535" height="491" alt="Screenshot 2026-02-22 at 10 01 49 PM" src="https://github.com/user-attachments/assets/59228a4d-a711-470a-86f2-f454b12bccf8" />
-
-
-### Your Python client approach (simultaneous pressure):
+### My old Python client approach (simultaneous pressure):
 Time 0s: OpenSearch starts up
 
 Time 5s: Python client connects + model download starts + pipeline creation attempts
 
 Time 6s: CIRCUIT BREAKER TRIPS (too much simultaneous pressure)
+
+<img width="584" height="273" alt="Screenshot 2026-02-23 at 11 05 34 PM" src="https://github.com/user-attachments/assets/dd7ded42-11ff-45ce-942b-8d9235676da1" />
 
 ### Dashboards approach (sequential pressure):
 Time 0s: OpenSearch starts up  
@@ -108,10 +107,16 @@ Time 90s: You manually create index (completes)
 
 **So the ML operations DO cause circuit breaker errors - the manual approach just avoids the simultaneous memory pressure that makes your Python client fail.**
 
-Benefits of making requests directly on Opensearch Dashboard API:
+Requests in Opensearch Dashboard API:
 - Dashboards container has its own memory allocation
 - Direct API calls avoid the Python client's memory overhead
 - Model loading happens in the OpenSearch JVM, not your Python process
+
+What happens when you send automated requests from your python client to opensearch:
+- Python client sends small JSON request to OpenSearch
+- OpenSearch downloads the 400MB model from HuggingFace into its own JVM memory
+- OpenSearch loads the model into memory
+- Python client just gets back a model ID
 
 ## Why I'm using OpenSearch locally only: the bill
 
