@@ -1,6 +1,8 @@
 dev:
-	pip3 install -r requirements.txt && docker stop $(docker ps -q) && docker system prune -af --volumes && python3 index.py && docker compose up -d
+	pip3 install -r requirements.txt && docker compose down && docker volume rm chicagoartlocationsbe_opensearch-data1 chicagoartlocationsbe_opensearch-data2 && docker stop $$(docker ps -q) 2>/dev/null || true && docker system prune -af --volumes && docker compose up -d 
 
+## docker system prune --volumes only removes unnamed volumes
+## 2>/dev/null || true -- suppresses the error when no containers are running
 ## docker ps -q -- returns a list of all running container ids 
 ## docker stop $(docker ps -q) -- stops all running containers
 ## docker system prune -af --volumes -- removes all stopped containers, networks, volumes, and images

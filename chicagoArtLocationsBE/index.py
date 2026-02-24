@@ -17,7 +17,13 @@ from haversine import haversine, Unit
 if (
     os.getenv("NODE_ENV") != "production"
 ):  ## https://allanderek.github.io/posts/import-placement/
-    from opensearch import createIndex, searchIndex, addResultToIndex
+    from opensearch import (
+        createIndex,
+        createIngestPipeline,
+        createSearchPipeline,
+        searchIndex,
+        addResultToIndex,
+    )
 
 sys.path.append(".")  ## appends . to end of PYTHONPATH
 app = FastAPI()
@@ -34,15 +40,18 @@ kdTree = None
 
 
 @app.on_event("startup")  # Runs once at startup, after server/uvicorn.run starts
-async def startup_event():
-    """Initialize KD-tree when FastAPI starts"""
+def startup_event():
+    global kdTree
     muralCoords = getCoordinates(
         "https://data.cityofchicago.org/resource/we8h-apcf.json"
     )
-    global kdTree
     kdTree = createKDTree(muralCoords, whichAxisSplitShouldBe(muralCoords))
     if os.getenv("NODE_ENV") != "production":
-        createIndex()  # only create opensearch index in development
+        ## if you computer has 8GB+ of RAM, you can run the following commands to create an opensearch index automatically
+        ## registerModel()
+        ## createIngestPipeline()
+        ## createSearchPipeline()
+        ## createIndex()  # only create opensearch index in development
         addResultToIndex(muralCoords)  # add to opensearch index
         print(isTreeBalanced(kdTree))
 
