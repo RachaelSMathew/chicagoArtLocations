@@ -19,6 +19,7 @@ if (
 ):  ## https://allanderek.github.io/posts/import-placement/
     from opensearch import (
         createIndex,
+        registerModel,
         createIngestPipeline,
         createSearchPipeline,
         searchIndex,
@@ -49,9 +50,13 @@ def startup_event():
     if os.getenv("NODE_ENV") != "production":
         ## if you computer has 8GB+ of RAM, you can run the following commands to create an opensearch index automatically
         ## registerModel()
+        ## time.sleep(30)  # wait for model to fully download and load
         ## createIngestPipeline()
+        ## time.sleep(10)  # wait for pipeline creation to complete
         ## createSearchPipeline()
+        ## time.sleep(10)  # wait for search pipeline creation to complete
         ## createIndex()  # only create opensearch index in development
+        ## time.sleep(300)
         addResultToIndex(muralCoords)  # add to opensearch index
         print(isTreeBalanced(kdTree))
 

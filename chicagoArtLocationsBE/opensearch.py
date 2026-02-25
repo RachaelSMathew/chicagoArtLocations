@@ -1,5 +1,6 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from opensearch_py_ml.ml_commons import MLCommonClient
+import time
 
 index_name = "chicago_art_installations"
 model_id = None  ## replace this value with the one here http://localhost:5601/app/ml-commons-dashboards/overview
@@ -41,6 +42,7 @@ def waitForOpenSearch():
 def registerModel():
     global model_id
     waitForOpenSearch()
+
     try:
         model_id = ml_client.register_pretrained_model(
             model_name="huggingface/sentence-transformers/all-MiniLM-L6-v2",
@@ -50,7 +52,7 @@ def registerModel():
         )
         print(f"Model was registered successfully. Model Id: {model_id}")
 
-        # --- 4. Deploy the model manually ---
+        # --- Deploy the model manually ---
         try:
             task_id = ml_client.deploy_model(model_id)
             print(f"Model deployment started. Task ID: {task_id}")
@@ -197,8 +199,9 @@ def searchIndex(query_string):
         query = {
             "query": {
                 "multi_match": {
-                    "query": query_string[1:-1],
+                    "query": query_string[1:-1],  ## remove the quotation marks
                     "fields": ["artwork_title^1.5", "description_of_artwork^1.0"],
+                    "analyzer": "keyword",  ## doesn't change the query string
                 }
             }
         }
