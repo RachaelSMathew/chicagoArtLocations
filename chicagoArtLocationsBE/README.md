@@ -73,7 +73,92 @@ Standard analysis (default analyzer) makes the text in the document case insensi
   }
 }
 ```
+## Exact search
 
+Goal: find search results that contain an exact match of the search query in either their title or description(priority given to title matches)
+
+Used when: someone searches with `"` surrounding it. 
+
+- Added the [keyword analyzer](https://docs.opensearch.org/latest/analyzers/supported-analyzers/index/) which does not change the query text at all. Unlike standard which parses the string into tokens
+
+```
+"query": {
+                "multi_match": {
+                    "query": query_string[1:-1],  ## remove the quotation marks
+                    "fields": ["artwork_title^1.5", "description_of_artwork^1.0"],
+                    "analyzer": "keyword",  ## doesn't change the query string
+                }
+            }
+        }
+```
+
+## Hybrid search in OpenSearch and memory issues when doing automated requests from python cliet 
+Goal: combining keyword search with semantic search (i.e., comparing embeddings). 
+- a semantic search on the title and description of an art search result (weight of 20% in search pipeline)
+- a keyword search on all the other fields of an art result (weight of 80% in search pipeline) 
+
+I was initially wanting to automate the process of creating the index, the search pipeline, the ingest pipeline(see opensearch.py) but that kept on causing OOM errors and `Connection refused errors`
+
+`opensearchpy.exceptions.ConnectionError: ConnectionError(<urllib3.connection.HTTPSConnection object at 0x150d4a150>: Failed to establish a new connection`
+
+I kept getting `opensearchpy.exceptions.TransportError: TransportError(429, 'circuit_breaking_exception', 'Memory Circuit Breaker is open, please check your resources!’)`
+
+Maybe it's a **timing issue**
+
+One solution I tried: Add sleep intervals between each function!
+
+### My old Python client approach (simultaneous pressure):
+Time 0s: OpenSearch starts up
+
+Time 5s: Python client connects + model download starts + pipeline creation attempts
+
+Time 6s: CIRCUIT BREAKER TRIPS (too much simultaneous pressure)
+
+<img width="584" height="273" alt="Screenshot 2026-02-23 at 11 05 34 PM" src="https://github.com/user-attachments/assets/dd7ded42-11ff-45ce-942b-8d9235676da1" />
+
+### Dashboards approach (sequential pressure):
+Time 0s: OpenSearch starts up  
+
+Time 30s: You manually register model (completes)
+
+Time 60s: You manually create pipeline (completes) 
+
+Time 90s: You manually create index (completes)
+
+
+### New Python client approach:
+
+```
+  registerModel()
+  time.sleep(30)  # wait for model to fully download and load
+  createIngestPipeline()
+  time.sleep(10)  # wait for pipeline creation to complete
+  createSearchPipeline()
+  time.sleep(10)  # wait for search pipeline creation to complete
+  createIndex()  # only create opensearch index in development
+  time.sleep(300)
+  addResultToIndex(muralCoords)  # add to opensearch index
+```
+
+This still caused `'Memory Circuit Breaker is open, please check your resources!'`
+
+Doing all these tasks through the client might cause OOM, because of the Python connection overhead 
+
+**So the ML operations DO cause circuit breaker errors - the manual approach just avoids the simultaneous memory pressure that makes your Python client fail.**
+
+Requests in Opensearch Dashboard API:
+- Direct API calls avoid the **Python client's memory overhead**
+- Model loading happens in the OpenSearch JVM, not your Python process
+
+What happens when you send Model resistration request from Python client to opensearch:
+- Python client sends small JSON request to OpenSearch
+- OpenSearch downloads the 400MB model from HuggingFace into its own JVM memory
+- OpenSearch loads the model into memory
+- Python client just gets back a model ID
+
+| What works | Doesn't work |
+| ------------- | ------------- |
+| Creating index, ingest pipeline, search pipeline, and adding results to index through Python client | doing all these tasks through Python client |
 ## Why I'm using OpenSearch locally only: the bill
 
 <img width="1149" height="450" alt="Screenshot 2026-01-20 at 11 59 07 PM" src="https://github.com/user-attachments/assets/c1b94a43-30c3-433c-8446-43e3a6c6608f" />
