@@ -1,9 +1,10 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from opensearch_py_ml.ml_commons import MLCommonClient
 import time
+import os
 
 index_name = "chicago_art_installations"
-model_id = None  ## replace this value with the one here http://localhost:5601/app/ml-commons-dashboards/overview
+model_id = None
 
 client = OpenSearch(
     hosts=[{"host": "localhost", "port": 9200}],
@@ -18,6 +19,21 @@ client = OpenSearch(
 
 # Initialize the ML client
 ml_client = MLCommonClient(client)
+
+
+def getModelId():
+    global model_id
+    body = {
+        "query": {"bool": {"must": [{"term": {"model_state": "DEPLOYED"}}]}},
+        "size": 1,
+    }
+    response = ml_client._client.transport.perform_request(
+        method="GET", url="/_plugins/_ml/models/_search", body=body
+    )
+    if response["hits"]["hits"][0]:
+        id = response["hits"]["hits"][0]["_id"]
+        model_id = id
+        print("This is the succesfully deployed model:", id)
 
 
 def waitForOpenSearch():
@@ -217,7 +233,7 @@ def searchIndex(query_string):
                                 "type": "best_fields",
                                 "operator": "or",
                                 "fields": [
-                                    "artwork_title^3.2",
+                                    "artwork_title^2.0",
                                     "description_of_artwork^1.5",
                                     "street_address^1.1",
                                     "media^1",
@@ -232,6 +248,7 @@ def searchIndex(query_string):
                 }
             },
             "sort": [{"_score": {"order": "desc"}}],
+            "min_score": 0.1,
             "size": 500,
         }
         if len(query_string) > 0:  ## query_string cannot be empty for a neural query
@@ -264,122 +281,3 @@ def searchIndex(query_string):
         search_pipeline="art_search_pipeline",
     )
     return response
-
-
-"""
-## register and deploy model
-POST /_plugins/_ml/models/_register?deploy=true
-{
-  "name": "huggingface/sentence-transformers/all-MiniLM-L6-v2",
-  "version": "1.0.2",
-  "model_format": "TORCH_SCRIPT"
-}
-
-## create ingest pipeline
-PUT /_ingest/pipeline/art_ingest_pipeline
-{
-  "description": "A text embedding pipeline for embedding the description and title",
-  "processors": [
-    {
-      "text_embedding": {
-        "model_id": "tId8jZwBBQi1Cdt1Dhjr",
-        "field_map": {
-          "description_of_artwork": "description_embedding",
-          "artwork_title": "title_embedding"
-        }
-      }
-    }
-  ]
-}
-
-## create index
-PUT /chicago_art_installations
-{
-  "settings": {
-    "default_pipeline": "art_ingest_pipeline",
-    "index.knn": "true"
-  },
-  "mappings": {
-    "properties": {
-      "artwork_title": {
-        "type": "text"
-      },
-      "description_of_artwork": {
-        "type": "text"
-      },
-      "street_address": {
-        "type": "text"
-      },
-      "media": {
-        "type": "text"
-      },
-      "affiliated_or_commissioning": {
-        "type": "text"
-      },
-      "year_installed": {
-        "type": "text"
-      },
-      "artist_credit": {
-        "type": "text"
-      },
-      "location_description": {
-        "type": "text"
-      },
-      "latitude": {
-        "type": "float"
-      },
-      "longitude": {
-        "type": "float"
-      },
-      "title_embedding": {
-        "type": "knn_vector",
-        "dimension": 384,
-        "space_type": "l2",
-        "method": {
-          "engine": "lucene",
-          "space_type": "l2",
-          "name": "hnsw",
-          "parameters": {}
-        }
-      },
-      "description_embedding": {
-        "type": "knn_vector",
-        "dimension": 384,
-        "space_type": "l2",
-        "method": {
-          "engine": "lucene",
-          "space_type": "l2",
-          "name": "hnsw",
-          "parameters": {}
-        }
-      }
-    }
-  }
-}
-
-## create search pipeline
-PUT /_search/pipeline/art_search_pipeline
-{
-  "description": "Post processor for hybrid search",
-  "phase_results_processors": [
-    {
-      "normalization-processor": {
-        "normalization": {
-          "technique": "min_max"
-        },
-        "combination": {
-          "technique": "arithmetic_mean",
-          "parameters": {
-            "weights": [
-              0.8,
-              0.1,
-              0.1
-            ]
-          }
-        }
-      }
-    }
-  ]
-}
-
-"""
