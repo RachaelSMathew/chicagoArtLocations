@@ -49,7 +49,13 @@ If no search query from FE --->
 If there is search query from FE ---> 
   1. Do a hybrid Opensearch query with that search query and return results with a score of at least 0.1 
   2. take the 20 results from this API endpoint(`/newsearch/?lat=${latitude}&long=${longitude}&minDistance=${minDistance}&searchQuery=`) and return them
-  3. Go through each result from Opensearch and return the ones that overlap with the results from bullet point 1
+  3. Go through each result from Opensearch and return the ones that overlap with the results from bullet point 2
+
+If there is an exact search from FE --->
+  1. Do a hybrid Opensearch query with that search query and return results with a score of at least 0.1
+  2. Re-format the results into the art location dictionary type
+  3. return them all to FE (no pagination)
+
 
 ### If OpenSearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
