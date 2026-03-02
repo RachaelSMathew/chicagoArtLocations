@@ -130,9 +130,11 @@ def searchingWithQueryDev(results, searchQuery, lat, long):
     numClosestNeighbors = 40
     while stillSearching:
         for i in opensearchReturn:
-            for result in results:
-                if result[1]["mural_registration_id"] == i.get("_id"):
-                    resultsFurtherFiltered.append(copy.deepcopy(result))
+            result = results.find(
+                lambda x: x[1]["mural_registration_id"] == i.get("_id")
+            )
+            if result:
+                resultsFurtherFiltered.append(copy.deepcopy(result))
         if (
             len(resultsFurtherFiltered) == 0
             and numClosestNeighbors < kdTree.length
