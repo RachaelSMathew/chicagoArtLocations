@@ -1,16 +1,9 @@
 ## Pipeline
 1. Render taking the [chicago coordiates json](https://data.cityofchicago.org/resource/we8h-apcf.json) and converting to a KD Tree and stores it
 2. KD Tree: finds the n closest locations to the current location with a minimum distance of minDistance 
-3. In Development env: Opensearch is __only used locally__ ([why?](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/README.md#why-im-using-opensearch-locally-only)) to do advanced search of the description, artists name, location etc.
+3. In Development env: Opensearch is __only used locally__ ([why?](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/README.md#why-im-using-opensearch-locally-only-the-bill)) to do advanced search of the description, artists name, location etc.
 4. In Prod env: Basic search is used which involves searching for the query within the concatenated version of mural fields.
 5. If you click on a map marker or a search result --> Exact search is used to find results whose artwork_title field match the query (this is done in both [prod](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/index.py#L76-L79) and [dev](https://github.com/RachaelSMathew/chicagoArtLocations/blob/main/chicagoArtLocationsBE/opensearch.py#L88-L90))
-
-### If OpenSearch has vector search, why not use that instead of a KD Tree?
-- wanted to challenge myself with a new data structure
-- opensearch's vector search uses [L2 Euclidean distance](https://docs.opensearch.org/latest/vector-search/getting-started/index/#step-1-create-a-vector-index) and not haversine distance
-- opensearch uses KNN search --> KD tree search is faster for lower-dimensional data
-
-<img width="413" height="187" alt="Screenshot 2026-02-01 at 9 38 27 PM" src="https://github.com/user-attachments/assets/9423ab95-1ffe-431d-83d5-4cb97695c4a9" />
 
 ## Render
 - using FREE tier --> web service instance spins down after 15 min. of inactivity
@@ -39,7 +32,34 @@ Want to test accuracy of my KDTree?: command `pytest` in root directory will run
 
 - [ ] using a bucket pr KD tree (i.e., [an rednaxela tree](https://gitlab.com/agschultz/robocode-knn-benchmark/-/blob/master/ags/utils/dataStructures/trees/thirdGenKD/KdTree.java?ref_type=heads) where only leaf nodes store data) 
 
-## Making search in OpenSearch case-insensitive 
+## Opensearch
+
+### How Opensearch is used for search
+
+**Configuration**:
+
+[Hybrid Search](https://docs.opensearch.org/latest/vector-search/ai-search/hybrid-search/index/#step-5-search-the-index-using-hybrid-search) within Opensearch
+
+- keyword search on description_of_artwork and artwork_title field (weight of 0.2)
+- semantic search on decription_embedding and title_embedding (weight of 0.8)
+
+If no search query from FE ---> 
+  1. take the 20 results from this API endpoint(`/newsearch/?lat=${latitude}&long=${longitude}&minDistance=${minDistance}&searchQuery=`) and return them
+
+If there is search query from FE ---> 
+  1. Do a hybrid Opensearch query with that search query and return results with a score of at least 0.1 
+  2. take the 20 results from this API endpoint(`/newsearch/?lat=${latitude}&long=${longitude}&minDistance=${minDistance}&searchQuery=`) and return them
+  3. Go through each result from Opensearch and return the ones that overlap with the results from bullet point 1
+
+### If OpenSearch has vector search, why not use that instead of a KD Tree?
+- wanted to challenge myself with a new data structure
+- opensearch's vector search uses [L2 Euclidean distance](https://docs.opensearch.org/latest/vector-search/getting-started/index/#step-1-create-a-vector-index) and not haversine distance
+- opensearch uses KNN search --> KD tree search is faster for lower-dimensional data
+
+<img width="413" height="187" alt="Screenshot 2026-02-01 at 9 38 27 PM" src="https://github.com/user-attachments/assets/9423ab95-1ffe-431d-83d5-4cb97695c4a9" />
+
+
+### Making search in OpenSearch case-insensitive 
 
 #### Analysis during index time:
 
@@ -73,7 +93,7 @@ Standard analysis (default analyzer) makes the text in the document case insensi
   }
 }
 ```
-## Exact search
+### Exact search
 
 Goal: find search results that contain an exact match of the search query in either their title or description(priority given to title matches)
 
@@ -92,7 +112,7 @@ Used when: someone searches with `"` surrounding it.
         }
 ```
 
-## Hybrid search in OpenSearch and memory issues when doing automated requests from python cliet 
+### Hybrid search in OpenSearch and memory issues when doing automated requests from python cliet 
 Goal: combining keyword search with semantic search (i.e., comparing embeddings). 
 - a semantic search on the title and description of an art search result (weight of 20% in search pipeline)
 - a keyword search on all the other fields of an art result (weight of 80% in search pipeline) 
@@ -159,7 +179,7 @@ What happens when you send Model resistration request from Python client to open
 | What works | Doesn't work |
 | ------------- | ------------- |
 | Creating index, ingest pipeline, search pipeline, and adding results to index through Python client | doing all these tasks through Python client |
-## Why I'm using OpenSearch locally only: the bill
+### Why I'm using OpenSearch locally only: the bill
 
 <img width="1149" height="450" alt="Screenshot 2026-01-20 at 11 59 07 PM" src="https://github.com/user-attachments/assets/c1b94a43-30c3-433c-8446-43e3a6c6608f" />
 
