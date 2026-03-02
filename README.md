@@ -33,6 +33,12 @@ After the initial load, 20 results will initially appear, and when the user scro
   - Back end
     - `cd chicagoArtLocationsBE`
     - `make dev`
+  - In [Opensearch Dashboard](http://localhost:5601/app/dev_tools#/console)
+    - follow the API requests mentioned in this file(opensearch_commands_hybrid_search.json)
+    - register and deploy a model
+    - create the ingest pipeline (as art locations are added to the index, the ingest pipeline will add two new fields that store vector embedding version of the description and artwork_title field)
+    - create the opensearch index (to store the collection of art locations)
+    - create the search pipeline (normalization and combination of hybrid search results)
    
 ## Data inconsistencies in the JSON from the Chicago Data Portal
 - Four instances of Alley Wall Project
