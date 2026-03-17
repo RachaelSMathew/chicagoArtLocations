@@ -217,7 +217,6 @@ def searchIndex(query_string):
                 "multi_match": {
                     "query": query_string[1:-1],  ## remove the quotation marks
                     "fields": ["artwork_title^1.5", "description_of_artwork^1.0"],
-                    "analyzer": "keyword",  ## doesn't change the query string
                 }
             }
         }
