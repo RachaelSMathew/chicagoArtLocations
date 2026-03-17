@@ -110,24 +110,74 @@ Standard analysis (default analyzer) makes the text in the document case insensi
 ```
 ### Exact search
 
+#### Partial matching in OpenSearch
+- Match query and mutli_match
+
+	match: used for partial matching of a single field
+
+```
+	{
+ 		"query": {
+  		 	"match": {
+				"title": "wind"
+    			}
+ 		 }
+	}
+```
+
+match on a `text` field: analyzes the search query and returns docs that have fields that contain the analyzed search query
+  
+match on `keyword` field(exact search): returns docs that have fields that fully contain the search query 
+
+
+#### Exact matching in Opensearch
+
 Goal: find search results that contain an exact match of the search query in either their title or description(priority given to title matches)
 
 Used when: someone searches with `"` surrounding it. 
 
-- Added the [keyword analyzer](https://docs.opensearch.org/latest/analyzers/supported-analyzers/index/) which does not change the query text at all. Unlike standard which parses the string into tokens
+- Keyword type in OpenSearch index mapping 
+```
+"mappings": {
+    "properties": {
+      "artwork_title": {
+        "type": “keyword”    ——> artword_title is NOT analyzed
+      },                     ---> using "type": "text" will analyze 
+    }
+}
+```
+When searching: use [term query](https://docs.opensearch.org/latest/query-dsl/term/term/#parameters) only on keyword fields
+
+- searching for **exact sequence of words** within a larger phrase: `match_phrase`
+
+	search query and field in OpenSearch (in this case, title) is analyzed
 
 ```
-"query": {
-                "multi_match": {
-                    "query": query_string[1:-1],  ## remove the quotation marks
-                    "fields": ["artwork_title^1.5", "description_of_artwork^1.0"],
-                    "analyzer": "keyword",  ## doesn't change the query string
-                }
-            }
-        }
+{ “query”: {
+	“match_phrase”: {
+		“title”: “exact query search”
+	}
+}
 ```
 
-### Hybrid search in OpenSearch and memory issues when doing automated requests from python cliet 
+- How to do match_phrase on multiple fields?
+
+	use multi_match query with the type `phrase`
+```
+{
+  "query": {
+    "multi_match": {
+      "query": QUERY, 
+       "type" : "phrase",
+      "fields": [
+        FIELDS_STRINGS
+      ]
+    }
+  }
+}
+```
+
+### Hybrid search in OpenSearch and memory issues when doing automated requests from Python client 
 Goal: combining keyword search with semantic search (i.e., comparing embeddings). 
 - a semantic search on the title and description of an art search result (weight of 20% in search pipeline)
 - a keyword search on all the other fields of an art result (weight of 80% in search pipeline) 
@@ -298,3 +348,6 @@ Chicago-art data access policy for open search collection:
 - index: collection of docs, like a table or relational DB
 - shard: partition of a single OS index, primary and replica are allocated to a specific node (primary and replica will never be on the same node)
 - segment: smaller unit of data storage within a shard, an immutable file structure that contains a subset of the shard's docs (shard is the bookshelf, segment is a single book)
+- [OpenSearch analyzing](https://docs.opensearch.org/latest/analyzers/supported-analyzers/standard/#:~:text=Tokenization%3A%20Uses%20the%20standard%20tokenizer,matching%20regardless%20of%20input%20case.)
+  - tokenization: receives a stream of characters and splits the text into individual tokens (usually a single word)
+  - lowercasing: converting everything to lowercase 
