@@ -2,7 +2,7 @@
 
 Using the [official Chicago city data catalogue](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) and sending a GET request to this endpoint which stores location data: [here](https://data.cityofchicago.org/resource/we8h-apcf.json), I am finding the nearest art locations to the user's current coordinate. 
 
-After the initial load, 20 results will initially appear, and when the user scrolls to the bottom, a loading icon should appear, and then more results should appear. The user can use the search bar to find the closest points that also contain a certain keyword. When the search query has quotations around it, then an exact search is done, searching for an artwork_title field that matches the query. Exact search(can also be triggered by clicking on a search result or a map marker) will return all the results at once because the results are taken directly from OpenSearch.
+**How it works**: After the initial load, 20 results will initially appear, and when the user scrolls to the bottom, a loading icon should appear, and then more results should appear. The user can use the search bar to find the closest points that also contain a certain keyword. When the search query has quotations around it, then an exact search is done, searching for an artwork_title field that matches the query. Exact search(can also be triggered by clicking on a search result or a map marker) will return all the results at once because the results are taken directly from OpenSearch.
 
 ## Tools used
 - BE
@@ -46,3 +46,7 @@ After the initial load, 20 results will initially appear, and when the user scro
 - Two instances of Light the spark
 - two instances of Where There Is Discord, Harmony:The Power of Art
 - 32 instances of Las Puertas de Paseo Boricua
+
+
+## Future Plans:
+- When a user inputs a search query, right now OpenSearch only filters out results that have a score of 0.01 or greater. I want to advance this search by decreasing the filter score in OS as the user scrolls down the search results from the front end. 

@@ -34,6 +34,15 @@ Want to test accuracy of my KDTree?: command `pytest` in root directory will run
 
 ## Opensearch
 
+### Why Opensearch?
+
+- The SPEED([source](https://opensearch.org/blog/opensearch-3-3-performance-innovations-for-ai-search-solutions/))
+  - latency for text queries is 6ms for OS 3.3
+  - Hybrid search
+    - latency is 400ms at most for OS 3.1
+  - Concurrent Segment Search used in accelerating vector search
+    - reduce latency by executing a query at the same time across multiple segments within a shard (rather than sequentially)
+
 ### How Opensearch is used for search
 
 **Configuration**:
@@ -280,3 +289,12 @@ Chicago-art data access policy for open search collection:
   }
 }
 ```
+
+
+### Vocab
+
+- cluster: group of nodes(i.e., individual server instances) (manager, coordinating, machine leanring, data)
+- node: a single instance of OS running on a machine, a single node has multiple shards from different indices
+- index: collection of docs, like a table or relational DB
+- shard: partition of a single OS index, primary and replica are allocated to a specific node (primary and replica will never be on the same node)
+- segment: smaller unit of data storage within a shard, an immutable file structure that contains a subset of the shard's docs (shard is the bookshelf, segment is a single book)
