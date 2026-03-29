@@ -130,10 +130,11 @@ def searchingWithQueryDev(results, searchQuery, lat, long):
     numClosestNeighbors = 40
     while stillSearching:
         for i in opensearchReturn:
-            result = results.find(
-                lambda x: x[1]["mural_registration_id"] == i.get("_id")
+            result = next(
+                (x for x in results if x[1]["mural_registration_id"] == i.get("_id")),
+                None,
             )
-            if result:
+            if result != None:
                 resultsFurtherFiltered.append(copy.deepcopy(result))
         if (
             len(resultsFurtherFiltered) == 0
