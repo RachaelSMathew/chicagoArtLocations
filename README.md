@@ -1,8 +1,10 @@
 # chicagoArtLocations
 
-Using the [official Chicago city data catalogue](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) and sending a GET request to this endpoint which stores location data: [here](https://data.cityofchicago.org/resource/we8h-apcf.json), I am finding the nearest art locations to the user's current coordinate. 
+Using the [official Chicago city data catalogue](https://data.cityofchicago.org/Parks-Recreation/Parks-Chicago-Park-District-Artworks-current-/e9ef-hrzb) and sending a GET request to [this endpoint](https://data.cityofchicago.org/resource/we8h-apcf.json) which stores location data, I am finding the nearest art locations to the user's current coordinate. 
 
 **How it works**: After the initial load, 20 results will initially appear, and when the user scrolls to the bottom, a loading icon should appear, and then more results should appear. The user can use the search bar to find the closest points that also contain a certain keyword. When the search query has quotations around it, then an exact search is done, searching for an artwork_title field that matches the query. Exact search(can also be triggered by clicking on a search result or a map marker) will return all the results at once because the results are taken directly from OpenSearch.
+
+**Note**: The very first time you enter the website, it may take a couple of minutes to load because the Render server, which is storing the art location data, (specifically the web service instance) spins down after 15 min. of inactivity
 
 ## Tools used
 - BE
