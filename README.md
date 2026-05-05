@@ -41,7 +41,11 @@ Using the [official Chicago city data catalogue](https://data.cityofchicago.org/
       - create the ingest pipeline (as art locations are added to the index, the ingest pipeline will add two new fields that store vector embedding version of the description and artwork_title field)
       - create the opensearch index (to store the collection of art locations)
       - create the search pipeline (normalization and combination of hybrid search results)
-      - then in `chicagoArtLocationsBE` run `python3 index.py`
+  - in opensearch.py, replace `modelId = None` with the modelId found here in OpenSearch Dashboards
+
+ <img width="1429" height="471" alt="Screenshot 2026-05-05 at 1 08 18 AM" src="https://github.com/user-attachments/assets/ee505f8b-904d-47ca-b67a-241a8c3bbdfc" />
+
+  - then in `chicagoArtLocationsBE` run `python3 index.py`
    
 ## Data inconsistencies in the JSON from the Chicago Data Portal
 - Four instances of Alley Wall Project
