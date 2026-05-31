@@ -1,10 +1,8 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from opensearch_py_ml.ml_commons import MLCommonClient
-import time
-import os
 
 index_name = "chicago_art_installations"
-model_id = None
+model_id = "MSJxd54BZIOukBdnJyJs"
 
 client = OpenSearch(
     hosts=[{"host": "localhost", "port": 9200}],
@@ -21,44 +19,10 @@ client = OpenSearch(
 ml_client = MLCommonClient(client)
 
 
-def getModelId():
-    global model_id
-    body = {
-        "query": {"bool": {"must": [{"term": {"model_state": "DEPLOYED"}}]}},
-        "size": 1,
-    }
-    response = ml_client._client.transport.perform_request(
-        method="GET", url="/_plugins/_ml/models/_search", body=body
-    )
-    if response["hits"]["hits"][0]:
-        id = response["hits"]["hits"][0]["_id"]
-        model_id = id
-        print("This is the succesfully deployed model:", id)
-
-
-def waitForOpenSearch():
-    """Wait for OpenSearch to be ready"""
-    import time
-
-    max_attempts = 30
-    for attempt in range(max_attempts):
-        try:
-            response = client.cluster.health()
-            if response["status"] in ["green", "yellow"]:
-                print(f"OpenSearch is ready (status: {response['status']})")
-                return True
-        except Exception as e:
-            print(f"Attempt {attempt + 1}: OpenSearch not ready yet - {e}")
-            time.sleep(2)
-
-    print("OpenSearch failed to start within timeout")
-    return False
-
-
 def registerModel():
     global model_id
-    waitForOpenSearch()
 
+    # --- 3. Register the model first ---
     try:
         model_id = ml_client.register_pretrained_model(
             model_name="huggingface/sentence-transformers/all-MiniLM-L6-v2",
@@ -68,7 +32,7 @@ def registerModel():
         )
         print(f"Model was registered successfully. Model Id: {model_id}")
 
-        # --- Deploy the model manually ---
+        # --- 4. Deploy the model manually ---
         try:
             task_id = ml_client.deploy_model(model_id)
             print(f"Model deployment started. Task ID: {task_id}")
@@ -194,14 +158,17 @@ def addResultToIndex(muralCoords):
             "location_description": muralCoord.get("location_description", ""),
             "latitude": muralCoord.get("latitude", None),
             "longitude": muralCoord.get("longitude", None),
+            "location": {
+                "lat": muralCoord.get("latitude", None),
+                "lon": muralCoord.get("longitude", None),
+            },
         }
         client.index(
             index=index_name, body=document, id=muralCoord["mural_registration_id"]
         )
 
 
-def searchIndex(query_string):
-    global index_name
+def searchIndex(query_string, lat, long, minDistance):
     global model_id
     isExactSearch = False
     if (
@@ -213,13 +180,7 @@ def searchIndex(query_string):
         isExactSearch = True
     if isExactSearch:
         query = {
-            "query": {
-                "multi_match": {
-                    "query": query_string[1:-1],  ## remove the quotation marks
-                    "type": "phrase",
-                    "fields": ["artwork_title^1.5", "description_of_artwork^1.0"],
-                }
-            }
+            "query": {"match_phrase": {"artwork_title": query_string.replace('"', "")}}
         }
     else:
         query = {
@@ -251,6 +212,17 @@ def searchIndex(query_string):
             "min_score": 0.1,
             "size": 500,
         }
+        if minDistance > 0:
+            query["post_filter"] = {
+                "bool": {
+                    "must_not": {
+                        "geo_distance": {  ## only supports an upper bound (only returns distances less than minDistance)
+                            "distance": str(minDistance) + "mi",
+                            "location": {"lat": lat, "lon": long},
+                        }
+                    }
+                }
+            }
         if len(query_string) > 0:  ## query_string cannot be empty for a neural query
             query["query"]["hybrid"]["queries"].append(
                 {
@@ -274,10 +246,14 @@ def searchIndex(query_string):
                     }
                 }
             )
+    try:
+        response = client.search(
+            body=query,
+            index=index_name,
+            search_pipeline="art_search_pipeline",
+        )
+    except Exception as e:
+        import json
 
-    response = client.search(
-        body=query,
-        index=index_name,
-        search_pipeline="art_search_pipeline",
-    )
+        print("This is the search error", json.dumps(e.info, indent=2))
     return response

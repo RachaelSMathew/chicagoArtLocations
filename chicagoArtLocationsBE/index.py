@@ -19,7 +19,6 @@ if (
 ):  ## https://allanderek.github.io/posts/import-placement/
     from opensearch import (
         searchIndex,
-        getModelId,
         addResultToIndex,
     )
 
@@ -45,7 +44,6 @@ def startup_event():
     )
     kdTree = createKDTree(muralCoords, whichAxisSplitShouldBe(muralCoords))
     if os.getenv("NODE_ENV") != "production":
-        getModelId()
         addResultToIndex(muralCoords)  # add to opensearch index
         print(isTreeBalanced(kdTree))
 
@@ -93,9 +91,27 @@ def searchingWithQueryProd(results, searchQuery, lat, long):
     return resultsFurtherFiltered
 
 
+def updateScoreBasedOnDistance(results, lat, long):
+    for result in results:
+        dist_mi = haversine(
+            (result["_source"]["latitude"], result["_source"]["longitude"]),
+            (lat, long),
+            unit=Unit.MILES,
+        )
+        geo_score = 1 / (1 + dist_mi)
+        ## closer = higher
+        result["_score"] = result["_score"] * geo_score
+    ## sort results based on updated score
+    results.sort(key=lambda x: x["_score"])  ## O(nlogn)
+
+
 ## handles exact search and return all results from opensearch at once
-def exactSearchingWithQueryDev(searchQuery, lat, long):
-    opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
+def searchingWithQueryDev(searchQuery, lat, long, minDistance):
+    opensearchReturn = (
+        searchIndex(searchQuery, lat, long, minDistance).get("hits", []).get("hits", [])
+    )
+    if not (searchQuery[-1] == '"' and searchQuery[0] == '"'):
+        updateScoreBasedOnDistance(opensearchReturn, lat, long)
     resultsFormatted = []
     for i in opensearchReturn:
         newFormatted = []
@@ -119,33 +135,6 @@ def exactSearchingWithQueryDev(searchQuery, lat, long):
         newFormatted.append(i)
         resultsFormatted.append(newFormatted)
     return resultsFormatted
-
-
-# handles search using opensearch (not exact search)when searching in development environment
-def searchingWithQueryDev(results, searchQuery, lat, long):
-    global kdTree
-    resultsFurtherFiltered = []
-    opensearchReturn = searchIndex(searchQuery).get("hits", []).get("hits", [])
-    stillSearching = True
-    numClosestNeighbors = 40
-    while stillSearching:
-        for i in opensearchReturn:
-            result = next(
-                (x for x in results if x[1]["mural_registration_id"] == i.get("_id")),
-                None,
-            )
-            if result != None:
-                resultsFurtherFiltered.append(copy.deepcopy(result))
-        if (
-            len(resultsFurtherFiltered) == 0
-            and numClosestNeighbors < kdTree.length
-            and len(results) > 0
-        ):
-            results = newsearch(lat, long, results[-1][0], numClosestNeighbors)
-            numClosestNeighbors += 20
-        else:
-            stillSearching = False
-    return resultsFurtherFiltered
 
 
 # This runs EVERY time someone visits /api/search
@@ -175,11 +164,13 @@ async def search(
                     "count": 0,
                     "time_seconds": time.time() - start_time,
                 }
-            resultsFurtherFiltered = exactSearchingWithQueryDev(searchQuery, lat, long)
+            resultsFurtherFiltered = searchingWithQueryDev(
+                searchQuery, lat, long, minDistance
+            )
         else:
             resultsFurtherFiltered = searchingWithQueryDev(
-                results, searchQuery, lat, long
-            )
+                searchQuery, lat, long, minDistance
+            )[:20]
     return {
         "results": results if searchQuery == "" else resultsFurtherFiltered,
         "count": len(results if searchQuery == "" else resultsFurtherFiltered),
