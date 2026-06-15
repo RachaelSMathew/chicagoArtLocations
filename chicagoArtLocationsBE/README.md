@@ -10,8 +10,8 @@
 - When you push to GitHub and render starts deploying, it runs through your GitHub workflow
   - (e.g. if you specify requirements.txt installation and python3 index.py in the GitHub workflow, it will show in render)
   - KD tree is not created on every API GET Request 
-<img width="437" height="776" alt="Screenshot 2026-01-18 at 8 53 31 PM" src="https://github.com/user-attachments/assets/d1f597dd-dfd8-4d12-9125-21f3357f6a35" />
-<img width="411" height="406" alt="Screenshot 2026-01-18 at 11 22 03 PM" src="https://github.com/user-attachments/assets/54c8e907-0063-44fd-a69a-0fe0d6215031" />
+<img width="437" alt="Screenshot 2026-01-18 at 8 53 31 PM" src="https://github.com/user-attachments/assets/d1f597dd-dfd8-4d12-9125-21f3357f6a35" />
+<img width="411" alt="Screenshot 2026-01-18 at 11 22 03 PM" src="https://github.com/user-attachments/assets/54c8e907-0063-44fd-a69a-0fe0d6215031" />
 
 How Render accesses env variables: in UI settings
 <img width="1396" height="654" alt="Screenshot 2026-01-19 at 1 22 35 AM" src="https://github.com/user-attachments/assets/558ef90d-4bca-4af5-b27b-928e7a3e208a" />
@@ -65,6 +65,68 @@ If there is an exact search from FE --->
   2. Re-format the results into the art location dictionary type
   3. return them all to FE (no pagination)
 
+### Using closeness to the target location as a part of the score in the hybrid query (i.e., a decay to the score for further locations) 
+
+I was initially not using geo_point for my lat/long, so I use script_score
+```
+                        {
+                            "script_score": {
+                                "script": {
+                                    "source": """
+                                        try {
+                                            double lat1 = params.lat;
+                                            double lon1 = params.lon;
+                                            double lat2 = doc['latitude'].value;
+                                            double lon2 = doc['longitude'].value;
+                                            double dLat = Math.toRadians(lat2 - lat1);
+                                            double dLon = Math.toRadians(lon2 - lon1);
+                                            double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                            Math.cos(Math.toRadians(lat1)) *
+                                            Math.cos(Math.toRadians(lat2)) *
+                                            Math.sin(dLon/2) * Math.sin(dLon/2);
+                                            double dist_km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                            double geo_score = 1 / (1 + dist_km); // closer = higher
+                                            return _score * geo_score;
+                                        } catch (Exception e) {
+                                            return _score;
+                                        }
+                                    """,
+                                    "params": {"lat": lat, "lon": long},
+                                },
+                            },
+                        },
+```
+This is treated as another weight in the hybrid query 
+But open search doesn’t accept script_score as a hybrid sub-query
+
+Added a type geo_point to mappings:
+```
+      "location": {
+        "type": "geo_point"
+      },
+```
+<img width="496" height="122" alt="Screenshot 2026-06-14 at 11 18 42 PM" src="https://github.com/user-attachments/assets/f8dbdb25-e407-4000-940a-03131845d60e" />
+
+Tried with geo_point and function_score as another hybrid query weight, and still does not work: OpenSearch is very restrictive 
+```
+                        {
+                            "function_score": {
+                                "query": {"match_all": {}},
+                                "gauss": {
+                                    "location": {
+                                        "origin": {"lat": lat, "lon": long},
+                                        "scale": "10km",
+                                        "decay": 0.5,
+                                    }
+                                },
+                            }
+                        },
+```
+
+**Solution**:
+- used geo_point to restrict all the results I got from OpenSearch to be more than minDistance
+<img width="774" height="226" alt="Screenshot 2026-06-14 at 11 20 21 PM" src="https://github.com/user-attachments/assets/bc1f1552-9045-4330-90ea-cf2de99ea37f" />
+- Post-OpenSearch query I did a function to update the score of each result based on its distance to the target (i.e., function updateScoreBasedOnDistance)
 
 ### If OpenSearch has vector search, why not use that instead of a KD Tree?
 - wanted to challenge myself with a new data structure
