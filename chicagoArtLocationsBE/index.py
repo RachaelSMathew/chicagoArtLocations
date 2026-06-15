@@ -100,9 +100,9 @@ def updateScoreBasedOnDistance(results, lat, long):
         )
         geo_score = 1 / (1 + dist_mi)
         ## closer = higher
-        result["_score"] = result["_score"] * geo_score
+        result["_score"] = (0.90 * result["_score"]) + (0.10 * geo_score)
     ## sort results based on updated score
-    results.sort(key=lambda x: x["_score"])  ## O(nlogn)
+    results.sort(key=lambda x: x["_score"], reverse=True)  ## O(nlogn)
 
 
 ## handles exact search and return all results from opensearch at once
@@ -110,7 +110,7 @@ def searchingWithQueryDev(searchQuery, lat, long, minDistance):
     opensearchReturn = (
         searchIndex(searchQuery, lat, long, minDistance).get("hits", []).get("hits", [])
     )
-    if not (searchQuery[-1] == '"' and searchQuery[0] == '"'):
+    if not (len(searchQuery) > 0 and searchQuery[-1] == '"' and searchQuery[0] == '"'):
         updateScoreBasedOnDistance(opensearchReturn, lat, long)
     resultsFormatted = []
     for i in opensearchReturn:
@@ -143,9 +143,10 @@ async def search(
     lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
 ):
     start_time = time.time()
-    results = newsearch(
-        lat, long, minDistance
-    )  ## returns 20 nearest points with a minimum distance of minDistance
+    if searchQuery == "":
+        results = newsearch(
+            lat, long, minDistance
+        )  ## returns 20 nearest points with a minimum distance of minDistance
 
     resultsFurtherFiltered = []
     if os.getenv("NODE_ENV") == "production":
