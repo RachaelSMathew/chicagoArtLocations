@@ -56,6 +56,9 @@ PUT /chicago_art_installations
       "location_description": {
         "type": "text"
       },
+      "location": {
+        "type": "geo_point"
+      },
       "latitude": {
         "type": "float"
       },
