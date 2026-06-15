@@ -10,8 +10,8 @@
 - When you push to GitHub and render starts deploying, it runs through your GitHub workflow
   - (e.g. if you specify requirements.txt installation and python3 index.py in the GitHub workflow, it will show in render)
   - KD tree is not created on every API GET Request 
-<img width="437" height="776" alt="Screenshot 2026-01-18 at 8 53 31 PM" src="https://github.com/user-attachments/assets/d1f597dd-dfd8-4d12-9125-21f3357f6a35" />
-<img width="411" height="406" alt="Screenshot 2026-01-18 at 11 22 03 PM" src="https://github.com/user-attachments/assets/54c8e907-0063-44fd-a69a-0fe0d6215031" />
+<img width="437" alt="Screenshot 2026-01-18 at 8 53 31 PM" src="https://github.com/user-attachments/assets/d1f597dd-dfd8-4d12-9125-21f3357f6a35" />
+<img width="411" alt="Screenshot 2026-01-18 at 11 22 03 PM" src="https://github.com/user-attachments/assets/54c8e907-0063-44fd-a69a-0fe0d6215031" />
 
 How Render accesses env variables: in UI settings
 <img width="1396" height="654" alt="Screenshot 2026-01-19 at 1 22 35 AM" src="https://github.com/user-attachments/assets/558ef90d-4bca-4af5-b27b-928e7a3e208a" />
