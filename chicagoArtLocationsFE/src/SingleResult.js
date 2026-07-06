@@ -236,7 +236,7 @@ export default function SingleResult({
           style={{
             display: "flex",
             gap: 10,
-            flexDirection: windowWidth < 370 ? "column" : "row",
+            flexDirection: windowWidth < 420 ? "column" : "row",
           }}
         >
           <span ref={targetRef} className="title">
