@@ -143,10 +143,9 @@ async def search(
     lat: float, long: float, minDistance: float = 0, searchQuery: str = ""
 ):
     start_time = time.time()
-    if searchQuery == "":
-        results = newsearch(
-            lat, long, minDistance
-        )  ## returns 20 nearest points with a minimum distance of minDistance
+    results = newsearch(
+        lat, long, minDistance
+    )  ## returns 20 nearest points with a minimum distance of minDistance
 
     resultsFurtherFiltered = []
     if os.getenv("NODE_ENV") == "production":
