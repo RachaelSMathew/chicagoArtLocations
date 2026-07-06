@@ -194,7 +194,10 @@ export default function SingleResult({
         {/* sticky header for single result*/}
         <div
           className="stickyHeader"
-          style={{ opacity: scrolledPast10Percent ? 1 : 0 }}
+          style={{
+            opacity: scrolledPast10Percent ? 1 : 0,
+            display: windowWidth < 390 ? "none" : "block",
+          }}
         >
           <i className="titleStickyHeader">
             {artWorkData.artwork_title ?? "untitled"}
